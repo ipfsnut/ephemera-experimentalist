@@ -1,0 +1,29 @@
+.completion-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  text-align: center;
+}
+
+.completion-container h1 {
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  color: #1a1a1a;
+}
+
+.completion-container button {
+  background: #1a1a1a;
+  color: #fff;
+  border: none;
+  padding: 1.5rem 3rem;
+  font-size: 1.2rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.completion-container button:hover {
+  transform: scale(1.05);
+}

@@ -1,0 +1,28 @@
+{
+  "name": "ephemeral-observer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "concurrently \"npm run start:mongo\" \"npm run start:frontend\" \"npm run start:backend\"",
+    "start:frontend": "cd frontend && npm run dev",
+    "start:backend": "cd backend && node src/server.js",
+    "install": "concurrently \"cd frontend && npm install\" \"cd backend && npm install\"",
+    "build": "concurrently \"cd frontend && npm run build\" \"cd backend && npm run build\"",
+    "start:mongo": "node scripts/start-mongo.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^6.2.0",
+    "mongodb-memory-server": "^10.1.2",
+    "postcss": "^8.4.47",
+    "postcss-preset-env": "^10.0.6"
+  },
+  "dependencies": {
+    "@redux-devtools/extension": "^3.3.0",
+    "redux-devtools-extension": "^2.13.9",
+    "save-dev": "^0.0.1-security"
+  }
+}

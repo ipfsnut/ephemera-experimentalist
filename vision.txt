@@ -1,0 +1,140 @@
+# Ephemera Platform Vision
+
+## Core Architecture
+
+1. Platform Layer
+- Dashboard showing available experiments
+- Global state for experiment selection and status
+- Shared components library:
+  - Trial display
+  - Response collection
+  - Progress indicators
+  - Results visualization
+- Common styling and theming
+
+2. Experiment Framework
+- Standard experiment lifecycle:
+  - Configuration
+  - Trial generation
+  - Response handling
+  - Data collection
+  - Results processing
+- Base experiment class with:
+  - Trial management
+  - Timing controls
+  - Data validation
+  - State transitions
+- Shared utilities:
+  - Random sequence generation
+  - Timing functions
+  - Data formatting
+  - Export tools
+
+3. Individual Experiments
+NST (Number Switching Task) Implementation:
+- Configuration:
+  - Difficulty levels
+  - Key mappings
+  - Trial counts
+  - Timing parameters
+- Trial Structure:
+  - Stimulus generation
+  - Response validation
+  - Performance metrics
+- Data Collection:
+  - Response times
+  - Accuracy
+  - Switch costs
+  - Learning effects
+
+## API Structure
+/api/platform/
+- /status - Platform status
+- /experiments - List available experiments
+- /settings - Global platform settings
+
+/api/experiments/
+- /:experimentId/config - Get/update experiment config
+- /:experimentId/trials - Trial management
+- /:experimentId/results - Results storage and retrieval
+
+/api/data/
+- /export - Data export endpoints
+- /analysis - Analysis endpoints
+
+## Implementation Phases
+1. Framework Development
+- Build experiment base class
+- Implement core platform components
+- Establish API structure
+- Create shared utilities
+
+2. NST Migration
+- Port existing NST code to new framework
+- Implement NST-specific components
+- Validate against original requirements
+- Performance optimization
+
+3. Platform Features
+- Dashboard implementation
+- Results visualization
+- Export functionality
+- Documentation system
+
+4. Additional Experiments
+- Template creation
+- Documentation for experiment development
+- Testing framework
+- Deployment guidelines
+
+## Development Standards
+- React for UI components
+- Redux for state management
+- Jest for testing
+- Standardized error handling
+- Performance monitoring
+
+
+
+
+frontend/
+├── src/
+│   ├── App.tsx                   # Main application component
+│   ├── index.tsx                 # Application entry point
+│   ├── routes/
+│   │   └── Routes.tsx            # Route definitions
+│   ├── layouts/
+│   │   └── MainLayout.tsx        # Core layout wrapper
+│   ├── components/
+│   │   ├── shared/               # Shared UI components
+│   │   │   ├── TrialDisplay.tsx
+│   │   │   ├── ResponseCollector.tsx
+│   │   │   └── ProgressIndicator.tsx
+│   │   ├── dashboard/            # Dashboard components
+│   │   │   ├── Dashboard.tsx
+│   │   │   └── ExperimentList.tsx
+│   │   ├── results/              # Results visualization
+│   │   │   ├── ResultsView.tsx
+│   │   │   └── Charts.tsx
+│   │   └── Navigation.tsx        # Global navigation
+│   ├── experiments/
+│   │   ├── base/
+│   │   │   ├── Experiment.ts     # Base experiment class
+│   │   │   └── types.ts          # Shared experiment types
+│   │   └── nst/
+│   │       ├── NSTExperiment.ts  # NST implementation
+│   │       ├── components/       # NST-specific components
+│   │       └── types.ts          # NST type definitions
+│   ├── store/
+│   │   ├── experimentSlice.ts    # Experiment state management
+│   │   ├── platformSlice.ts      # Platform-wide state
+│   │   └── store.ts             # Redux configuration
+│   ├── services/
+│   │   ├── api.ts               # API client
+│   │   └── experimentService.ts  # Experiment business logic
+│   ├── styles/
+│   │   ├── theme.ts             # Global theme configuration
+│   │   └── global.css           # Global styles
+│   └── utils/
+       ├── timing.ts             # Timing utilities
+       └── validation.ts         # Data validation
