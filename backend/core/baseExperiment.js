@@ -6,6 +6,8 @@ class BaseExperiment {
       currentDigit: 0,
       responses: []
     };
+    this.trials = [];
+    this.currentTrialIndex = 0;
   }
 
   generateTrials() {

@@ -29,6 +29,13 @@ class NSTExperiment extends BaseExperiment {
       }
     };
   }
+  generateTrials() {
+    const trials = [];
+    for (let i = 0; i < this.config.trialsPerLevel; i++) {
+      trials.push(this.getNextDigit());
+    }
+    return trials;
+  }  
   processResponse(response) {
     const currentNumber = this.state.currentNumber;
     const isCorrect = (response === 'odd' && currentNumber % 2 === 1) || 

@@ -1,5 +1,5 @@
 const { registerExperiment } = require('../core/experimentLoader');
-const NumberSwitchingTask = require('./numberSwitching');
+const NSTExperiment = require('./NSTExperiment');
 
 // Register available experiments
 registerExperiment('nst', NumberSwitchingTask);

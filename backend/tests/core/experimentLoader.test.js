@@ -1,13 +1,12 @@
 const { getExperiment } = require('../../core/experimentLoader');
-const NumberSwitchingTask = require('../../experiments/numberSwitching');
+const NSTExperiment = require('../../experiments/NSTExperiment');
 
 describe('Experiment Loader', () => {
   test('loads NST experiment type correctly', () => {
     const ExperimentClass = getExperiment('NST');
     expect(ExperimentClass).toBeDefined();
-    expect(ExperimentClass).toBe(NumberSwitchingTask);
+    expect(ExperimentClass).toBe(NSTExperiment);
   });
-
   test('throws error for unknown experiment type', () => {
     expect(() => {
       getExperiment('UNKNOWN_TYPE');

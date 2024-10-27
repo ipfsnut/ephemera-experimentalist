@@ -1,7 +1,7 @@
-const NumberSwitchingTask = require('../experiments/numberSwitching');
+const NSTExperiment = require('../experiments/NSTExperiment');
 
 const experiments = {
-  'NST': NumberSwitchingTask
+  'NST': NSTExperiment
 };
 
 const getExperiment = (type) => {

@@ -13,7 +13,8 @@ class StateManager {
       trialResponses: [],
       state: {
         currentDigit: 0,
-        currentTrialIndex: 0
+        currentTrialIndex: 0,
+        trials: experiment.generateTrials() // Ensure trials are generated
       }
     });
     this.resetTimeout(sessionId);

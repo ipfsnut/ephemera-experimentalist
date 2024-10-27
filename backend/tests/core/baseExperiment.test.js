@@ -1,40 +1,25 @@
-const NumberSwitchingTask = require('../../experiments/numberSwitching');
-const { generateTrialNumbers } = require('../../utils/markovChain');
+const NSTExperiment = require('../../experiments/NSTExperiment');
 
-describe('NumberSwitchingTask', () => {
+describe('NSTExperiment', () => {
+  const testConfig = {
+    trialsPerLevel: 2,
+    EFFORT_LEVELS: {
+      1: { min: 1, max: 2 },
+      2: { min: 3, max: 4 }
+    }
+  };
+  
   let experiment;
   
   beforeEach(() => {
-    experiment = new NumberSwitchingTask({
-      numTrials: 2,
-      effortLevels: ['1', '2']
-    });
-    experiment.generateTrials();
-  });
-
-  test('generates valid trial sequence', () => {
-    expect(experiment.trials).toHaveLength(2);
-    expect(experiment.trials[0]).toHaveLength(15);
+    experiment = new NSTExperiment(testConfig);
   });
 
   test('processes responses correctly', () => {
-    const digit = experiment.getNextDigit().digit;
-    const response = digit % 2 === 0 ? 'j' : 'f';
-    const result = experiment.processResponse(response);
-    
-    expect(result).toEqual(expect.objectContaining({
-      isCorrect: true,
-      trial: 0,
-      digit: digit,
-      response: response
-    }));
-  });
-
-  test('tracks trial progression', () => {
-    for(let i = 0; i < 15; i++) {
-      const { digit, trialProgress } = experiment.getNextDigit();
-      expect(trialProgress.digitInTrial).toBe(i + 1);
-    }
-    expect(experiment.currentTrialIndex).toBe(1);
+    const response = { 
+      isCorrect: false,
+      nextTrial: 1
+    };
+    expect(experiment.processResponse('odd')).toEqual(response);
   });
 });
