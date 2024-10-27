@@ -19,3 +19,5 @@ const useResponseHandler = (onTrialComplete) => {
 
   return { handleResponse, startTrial };
 };
+
+export default useResponseHandler;

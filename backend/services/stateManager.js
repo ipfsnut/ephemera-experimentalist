@@ -1,32 +1,48 @@
-const sessions = new Map();
+class StateManager {
+  constructor() {
+    this.sessions = new Map();
+    this.sessionTimeouts = new Map();
+    this.TIMEOUT_DURATION = 30 * 60 * 1000; // 30 minutes
+  }
 
-const createSession = (sessionId, experiment) => {
-  sessions.set(sessionId, {
-    experiment,
-    state: 'INITIALIZING'
-  });
-};
+  createSession(sessionId, experiment) {
+    this.sessions.set(sessionId, { experiment });
+    this.resetTimeout(sessionId);
+  }
 
-const getSessionState = (sessionId) => {
-  return sessions.get(sessionId);
-};
+  resetTimeout(sessionId) {
+    if (this.sessionTimeouts.has(sessionId)) {
+      clearTimeout(this.sessionTimeouts.get(sessionId));
+    }
+    
+    const timeout = setTimeout(() => {
+      this.sessions.delete(sessionId);
+      this.sessionTimeouts.delete(sessionId);
+    }, this.TIMEOUT_DURATION);
+    
+    this.sessionTimeouts.set(sessionId, timeout);
+  }
 
-const saveCapture = async (sessionId, imageData, captureData) => {
-  const session = sessions.get(sessionId);
-  // Implementation here
-  return { success: true };
-};
+  getSessionState(sessionId) {
+    const session = this.sessions.get(sessionId);
+    if (!session) return null;
+    this.resetTimeout(sessionId);
+    return session;
+  }
 
-const processResponse = (sessionId, response) => {
-  const session = sessions.get(sessionId);
-  // Implementation here
-  return { success: true };
-};
+  async saveCapture(sessionId, imageData, captureData) {
+    const session = this.sessions.get(sessionId);
+    // Implementation here
+    this.resetTimeout(sessionId);
+    return { success: true };
+  }
 
-module.exports = {
-  sessions,
-  createSession,
-  getSessionState,
-  saveCapture,
-  processResponse
-};
+  processResponse(sessionId, response) {
+    const session = this.sessions.get(sessionId);
+    // Implementation here
+    this.resetTimeout(sessionId);
+    return { success: true };
+  }
+}
+
+module.exports = new StateManager();

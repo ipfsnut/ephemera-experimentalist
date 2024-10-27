@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const winston = require('winston');
 const eventRoutes = require('./routes/eventRoutes');
+const experimentRoutes = require('./routes/experimentRoutes');
 const { connectDB } = require('../database');
 
 // Goal 1: Server Setup
@@ -27,7 +28,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 // Middleware
 const corsOptions = {
-  origin: 'http://localhost:3000',
+  origin: 'http://localhost:5173',
   credentials: true,
   optionsSuccessStatus: 200
 };
@@ -38,8 +39,8 @@ app.use(express.json());
 // Routes
 console.log('Server starting...');
 app.use('/api/events', eventRoutes);
-console.log('Event routes registered');
-
+app.use('/api/experiment', experimentRoutes);
+console.log('Routes registered');
 
 // Error handling middleware
 app.use((err, req, res, next) => {

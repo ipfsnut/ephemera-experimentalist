@@ -6,5 +6,8 @@ module.exports = {
   coveragePathIgnorePatterns: ['/node_modules/'],
   testMatch: ['**/tests/**/*.test.js'],
   setupFilesAfterEnv: ['./tests/setup.js'],
-  testTimeout: 10000
+  testTimeout: 10000,
+  testEnvironmentOptions: {
+    NODE_ENV: 'test'
+  }
 };

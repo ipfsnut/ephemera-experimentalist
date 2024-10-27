@@ -1,56 +1,77 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useExperiment } from '../../context/ExperimentContext'
+import useKeyboardHandler from './Trial/useKeyboardHandler'
+import useResponseHandler from './Trial/useResponseHandler'
+import useTrialTransition from './Trial/useTrialTransition'
+import { useRenderPerformance } from '../../test/performance/hooks'
 
 const NST = () => {
   const [currentDigit, setCurrentDigit] = useState(null)
-  const [sessionId, setSessionId] = useState(null)
+  const navigate = useNavigate()
   const { state, dispatch } = useExperiment()
-
-  const startExperiment = async () => {
-    const response = await fetch('/api/experiment/start', {
-      method: 'POST'
+  const renderMetrics = useRenderPerformance('NSTExperiment')
+  
+  const { handleResponse, startTrial, metrics } = useResponseHandler((trialData) => {
+    dispatch({ 
+      type: 'RECORD_RESPONSE', 
+      payload: {
+        ...trialData,
+        renderCount: renderMetrics.renderCount,
+        responseMetrics: metrics
+      }
     })
-    const data = await response.json()
-    setSessionId(data.sessionId)
-  }
+  })
+  const { isTransitioning, displayDigit } = useTrialTransition(currentDigit)
 
-  const fetchNextDigit = async () => {
-    const response = await fetch(`/api/experiment/${sessionId}/next`)
-    const digit = await response.json()
-    setCurrentDigit(digit)
-  }
+  useKeyboardHandler(handleResponse, isTransitioning)
 
   useEffect(() => {
-    startExperiment()
-  }, [])
+    if (!isTransitioning && currentDigit) {
+      startTrial()
+    }
+  }, [currentDigit, isTransitioning])
 
   useEffect(() => {
-    if (sessionId) {
+    if (state.sessionId) {
       fetchNextDigit()
     }
-  }, [sessionId])
+  }, [state.sessionId])
 
   useEffect(() => {
-    const handleKeyPress = async (e) => {
-      if (e.key === 'f' || e.key === 'j') {
-        const response = await fetch(`/api/${sessionId}/response`, {
-          method: 'POST',
-          body: JSON.stringify({ response: e.key }),
-          headers: { 'Content-Type': 'application/json' }
-        })
-        if (response.ok) {
-          fetchNextDigit()
+    if (metrics && !isTransitioning) {
+      dispatch({
+        type: 'UPDATE_TRIAL_METRICS',
+        payload: {
+          responseTime: metrics.lastResponse,
+          averageRenderTime: renderMetrics.average,
+          totalRenders: renderMetrics.renderCount
         }
-      }
+      })
     }
-    window.addEventListener('keydown', handleKeyPress)
-    return () => window.removeEventListener('keydown', handleKeyPress)
-  }, [sessionId])
+  }, [metrics, isTransitioning])
+
+  useEffect(() => {
+    if (state.isComplete) {
+      navigate('/experiment/nst/results', { 
+        state: { 
+          metrics: state.performanceMetrics,
+          responses: state.responses 
+        }
+      })
+    }
+  }, [state.isComplete])
+
+  const fetchNextDigit = async () => {
+    const response = await fetch(`/api/experiment/${state.sessionId}/next`)
+    const data = await response.json()
+    setCurrentDigit(data.digit)
+  }
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
       <div style={{ fontSize: '72px', fontFamily: 'monospace' }}>
-        {currentDigit || ''}
+        {displayDigit || ''}
       </div>
     </div>
   )

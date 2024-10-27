@@ -29,6 +29,25 @@ class NSTExperiment extends BaseExperiment {
       }
     };
   }
+  processResponse(response) {
+    const currentNumber = this.state.currentNumber;
+    const isCorrect = (response === 'odd' && currentNumber % 2 === 1) || 
+                     (response === 'even' && currentNumber % 2 === 0);
+    
+    this.state.responses.push({
+      trial: this.trialCount,
+      number: currentNumber,
+      response,
+      isCorrect,
+      effortLevel: this.currentEffortLevel,
+      timestamp: Date.now()
+    });
+  
+    return {
+      isCorrect,
+      nextTrial: this.trialCount + 1
+    };
+  }
 }
 
 module.exports = NSTExperiment;

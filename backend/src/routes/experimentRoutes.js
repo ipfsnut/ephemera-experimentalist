@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const experimentController = require('../controllers/experimentController');
+const experimentController = require('../../controllers/experimentController');
 
 router.post('/start', experimentController.startExperiment);
 router.get('/:sessionId/next', experimentController.getNextDigit);

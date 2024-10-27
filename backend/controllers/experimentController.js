@@ -3,13 +3,17 @@ const StateManager = require('../services/stateManager');
 
 exports.startExperiment = async (req, res) => {
   try {
+    console.log('Request body:', req.body);
     const { experimentType, config } = req.body;
+    console.log('Experiment type:', experimentType);
     const ExperimentClass = getExperiment(experimentType);
+    console.log('Got experiment class');
     const experiment = new ExperimentClass(config);
     const sessionId = `session-${Date.now()}`;
     StateManager.createSession(sessionId, experiment);
     return res.json({ sessionId });
   } catch (error) {
+    console.error('Start experiment error:', error);
     return res.status(500).json({ message: error.message });
   }
 };
