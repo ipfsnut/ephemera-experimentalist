@@ -1,77 +1,41 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useExperiment } from '../../context/ExperimentContext'
 import useKeyboardHandler from './Trial/useKeyboardHandler'
 import useResponseHandler from './Trial/useResponseHandler'
 import useTrialTransition from './Trial/useTrialTransition'
-import { useRenderPerformance } from '../../test/performance/hooks'
 
 const NST = () => {
-  const [currentDigit, setCurrentDigit] = useState(null)
-  const navigate = useNavigate()
-  const { state, dispatch } = useExperiment()
-  const renderMetrics = useRenderPerformance('NSTExperiment')
+  const { state: experimentState } = useExperiment()
+  const [state, setState] = useState({
+    currentTrial: 0,
+    currentDigit: 0,
+    responses: []
+  })
   
   const { handleResponse, startTrial, metrics } = useResponseHandler((trialData) => {
-    dispatch({ 
-      type: 'RECORD_RESPONSE', 
-      payload: {
-        ...trialData,
-        renderCount: renderMetrics.renderCount,
-        responseMetrics: metrics
-      }
-    })
+    setState(prev => ({
+      ...prev,
+      responses: [...prev.responses, trialData]
+    }))
   })
-  const { isTransitioning, displayDigit } = useTrialTransition(currentDigit)
-
-  useKeyboardHandler(handleResponse, isTransitioning)
 
   useEffect(() => {
-    if (!isTransitioning && currentDigit) {
-      startTrial()
+    console.log('Experiment state in NST:', experimentState)
+    if (experimentState.sessionId) {
+      // Initialize experiment
     }
-  }, [currentDigit, isTransitioning])
+  }, [experimentState])
 
   useEffect(() => {
-    if (state.sessionId) {
-      fetchNextDigit()
-    }
-  }, [state.sessionId])
-
-  useEffect(() => {
-    if (metrics && !isTransitioning) {
-      dispatch({
-        type: 'UPDATE_TRIAL_METRICS',
-        payload: {
-          responseTime: metrics.lastResponse,
-          averageRenderTime: renderMetrics.average,
-          totalRenders: renderMetrics.renderCount
-        }
-      })
-    }
-  }, [metrics, isTransitioning])
-
-  useEffect(() => {
-    if (state.isComplete) {
-      navigate('/experiment/nst/results', { 
-        state: { 
-          metrics: state.performanceMetrics,
-          responses: state.responses 
-        }
-      })
-    }
-  }, [state.isComplete])
-
-  const fetchNextDigit = async () => {
-    const response = await fetch(`/api/experiment/${state.sessionId}/next`)
-    const data = await response.json()
-    setCurrentDigit(data.digit)
-  }
+    console.log('Component State:', state)
+    console.log('Session ID from context:', experimentState.sessionId)
+    console.log('Response metrics:', metrics)
+  }, [state, experimentState.sessionId, metrics])
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+    <div className="nst-container">
       <div style={{ fontSize: '72px', fontFamily: 'monospace' }}>
-        {displayDigit || ''}
+        {state.currentDigit || ''}
       </div>
     </div>
   )

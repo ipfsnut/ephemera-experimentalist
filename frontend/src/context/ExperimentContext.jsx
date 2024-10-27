@@ -1,21 +1,11 @@
-import { createContext, useContext, useReducer } from 'react'
+import React, { createContext, useContext, useReducer } from 'react'
 
-// Create context for experiment state management
 const ExperimentContext = createContext()
 
-// Initial state includes session tracking and performance metrics
-const initialState = {
-  currentTrial: 0,
-  responses: [],
-  sessionId: null,
-  performanceMetrics: [],
-  trialData: null,
-  isComplete: false
-}
-
-function experimentReducer(state, action) {
+const experimentReducer = (state, action) => {
   switch (action.type) {
-    // Record user response with timing and accuracy
+    case 'SET_SESSION':
+      return { ...state, sessionId: action.payload }
     case 'RECORD_RESPONSE':
       return {
         ...state,
@@ -25,16 +15,12 @@ function experimentReducer(state, action) {
           timestamp: Date.now()
         }]
       }
-    
-    // Update trial data with new digit and metadata
     case 'SET_TRIAL_DATA':
       return {
         ...state,
         trialData: action.payload,
         currentTrial: state.currentTrial + 1
       }
-
-    // Store performance metrics for analysis
     case 'UPDATE_TRIAL_METRICS':
       return {
         ...state,
@@ -43,21 +29,27 @@ function experimentReducer(state, action) {
           ...action.payload
         }]
       }
-
-    // Mark experiment as complete and ready for data export
     case 'COMPLETE_EXPERIMENT':
       return {
         ...state,
         isComplete: true
       }
-
     default:
       return state
   }
 }
 
-export function ExperimentProvider({ children }) {
-  const [state, dispatch] = useReducer(experimentReducer, initialState)
+export const ExperimentProvider = ({ children }) => {
+  const [state, dispatch] = useReducer(experimentReducer, {
+    sessionId: null,
+    trials: [],
+    currentTrial: 0,
+    responses: [],
+    performanceMetrics: [],
+    trialData: null,
+    isComplete: false
+  })
+
   return (
     <ExperimentContext.Provider value={{ state, dispatch }}>
       {children}
@@ -65,6 +57,10 @@ export function ExperimentProvider({ children }) {
   )
 }
 
-export function useExperiment() {
-  return useContext(ExperimentContext)
+export const useExperiment = () => {
+  const context = useContext(ExperimentContext)
+  if (!context) {
+    throw new Error('useExperiment must be used within an ExperimentProvider')
+  }
+  return context
 }

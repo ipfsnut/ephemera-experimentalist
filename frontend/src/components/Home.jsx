@@ -7,20 +7,25 @@ const Home = () => {
   const { dispatch } = useExperiment();
 
   const startExperiment = async () => {
+    console.log('Starting experiment with config:', { 
+      experimentType: 'NST', 
+      config: { totalTrials: 10 } 
+    })
+    
     const response = await fetch('/api/experiment/start', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         experimentType: 'NST',
         config: { totalTrials: 10 }
       })
-    });
-    const data = await response.json();
+    })
+    const data = await response.json()
+    console.log('API Response:', data)
     
-    dispatch({ type: 'SET_SESSION', payload: data.sessionId });
-    navigate('/experiments/nst');
+    dispatch({ type: 'SET_SESSION', payload: data.sessionId })
+    console.log('Navigating with state:', { sessionId: data.sessionId })
+    navigate('/experiments/nst')
   };
 
   return (
