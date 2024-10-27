@@ -1,4 +1,6 @@
 import '@testing-library/jest-dom';
+import { createRoot } from 'react-dom/client';
+import { act } from 'react-dom/test-utils';
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
@@ -18,3 +20,28 @@ global.IntersectionObserver = class IntersectionObserver {
   unobserve() {}
   disconnect() {}
 };
+
+// Add fetch mock
+global.fetch = jest.fn(() => 
+  Promise.resolve({
+    json: () => Promise.resolve({})
+  })
+);
+
+// Add DOM container cleanup
+let container = null;
+beforeEach(() => {
+  container = document.createElement('div');
+  document.body.appendChild(container);
+  global.fetch.mockClear();
+});
+
+afterEach(() => {
+  if (container) {
+    document.body.removeChild(container);
+    container = null;
+  }
+});
+
+// React 18 specific setup
+global.IS_REACT_ACT_ENVIRONMENT = true;

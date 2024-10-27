@@ -96,45 +96,16 @@ NST (Number Switching Task) Implementation:
 
 
 
-
-frontend/
-├── src/
-│   ├── App.tsx                   # Main application component
-│   ├── index.tsx                 # Application entry point
-│   ├── routes/
-│   │   └── Routes.tsx            # Route definitions
-│   ├── layouts/
-│   │   └── MainLayout.tsx        # Core layout wrapper
-│   ├── components/
-│   │   ├── shared/               # Shared UI components
-│   │   │   ├── TrialDisplay.tsx
-│   │   │   ├── ResponseCollector.tsx
-│   │   │   └── ProgressIndicator.tsx
-│   │   ├── dashboard/            # Dashboard components
-│   │   │   ├── Dashboard.tsx
-│   │   │   └── ExperimentList.tsx
-│   │   ├── results/              # Results visualization
-│   │   │   ├── ResultsView.tsx
-│   │   │   └── Charts.tsx
-│   │   └── Navigation.tsx        # Global navigation
-│   ├── experiments/
-│   │   ├── base/
-│   │   │   ├── Experiment.ts     # Base experiment class
-│   │   │   └── types.ts          # Shared experiment types
-│   │   └── nst/
-│   │       ├── NSTExperiment.ts  # NST implementation
-│   │       ├── components/       # NST-specific components
-│   │       └── types.ts          # NST type definitions
-│   ├── store/
-│   │   ├── experimentSlice.ts    # Experiment state management
-│   │   ├── platformSlice.ts      # Platform-wide state
-│   │   └── store.ts             # Redux configuration
-│   ├── services/
-│   │   ├── api.ts               # API client
-│   │   └── experimentService.ts  # Experiment business logic
-│   ├── styles/
-│   │   ├── theme.ts             # Global theme configuration
-│   │   └── global.css           # Global styles
-│   └── utils/
-       ├── timing.ts             # Timing utilities
-       └── validation.ts         # Data validation
+graph TB
+    MarkovChain -->|generateNumber| NumberGen[15-Digit Sequence + Metadata]
+    NumberGen -->|buildTrial| TaskSetup[Number Switching Task]
+    
+    subgraph ExperimentCycle
+        TaskSetup -->|initializeTrials| TrialQueue
+        TrialQueue -->|getNextDigit| CurrentDigit
+        CurrentDigit -->|processResponse| ResponseData
+        ResponseData -->|advanceTrial| TrialQueue
+    end
+    
+    ExperimentCycle -->|serveDigit| APIEndpoint
+    APIEndpoint -->|collectResponse| ExperimentCycle

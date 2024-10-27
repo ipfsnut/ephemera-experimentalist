@@ -3,21 +3,33 @@ const StateManager = require('../services/stateManager');
 
 exports.startExperiment = async (req, res) => {
   try {
-    console.log('Request body:', req.body);
+    console.log('Starting experiment with config:', req.body);
     const { experimentType, config } = req.body;
-    console.log('Experiment type:', experimentType);
+    
+    // Add default config validation
+    const validatedConfig = {
+      numTrials: config.numTrials || 14,
+      effortLevels: config.effortLevels || ['1', '2', '3', '4', '5', '6', '7'],
+      digitsPerTrial: 15
+    };
+
+    console.log('Loading experiment class:', experimentType);
     const ExperimentClass = getExperiment(experimentType);
-    console.log('Got experiment class');
-    const experiment = new ExperimentClass(config);
+    console.log('Initializing experiment instance');
+    const experiment = new ExperimentClass(validatedConfig);
+    console.log('Generating trials');
+    experiment.generateTrials();
+
     const sessionId = `session-${Date.now()}`;
+    console.log('Creating session:', sessionId);
     StateManager.createSession(sessionId, experiment);
+    console.log('Session created successfully');
     return res.json({ sessionId });
   } catch (error) {
     console.error('Start experiment error:', error);
     return res.status(500).json({ message: error.message });
   }
 };
-
 exports.getNextDigit = async (req, res) => {
   const { sessionId } = req.params;
   const session = StateManager.sessions.get(sessionId);
@@ -30,15 +42,21 @@ exports.getNextDigit = async (req, res) => {
 
   try {
     const nextDigit = session.experiment.getNextDigit();
+    const trialState = {
+      currentTrialIndex: session.experiment.currentTrialIndex,
+      currentDigit: session.experiment.state.currentDigit,
+      totalTrials: session.experiment.trials.length
+    };
+    
     return res.json({
       digit: nextDigit,
-      captureRequired: true
+      trialState,
+      captureRequired: session.experiment.shouldCaptureImage()
     });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
 };
-
 
 exports.submitCapture = async (req, res) => {
   const { sessionId } = req.params;

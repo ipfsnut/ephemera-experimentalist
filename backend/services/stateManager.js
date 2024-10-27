@@ -6,7 +6,16 @@ class StateManager {
   }
 
   createSession(sessionId, experiment) {
-    this.sessions.set(sessionId, { experiment });
+    this.sessions.set(sessionId, {
+      experiment,
+      startTime: Date.now(),
+      lastActivity: Date.now(),
+      trialResponses: [],
+      state: {
+        currentDigit: 0,
+        currentTrialIndex: 0
+      }
+    });
     this.resetTimeout(sessionId);
   }
 
@@ -26,20 +35,29 @@ class StateManager {
   getSessionState(sessionId) {
     const session = this.sessions.get(sessionId);
     if (!session) return null;
+    
+    session.lastActivity = Date.now();
     this.resetTimeout(sessionId);
-    return session;
+    
+    return {
+      currentTrial: session.experiment.currentTrialIndex,
+      currentDigit: session.experiment.state.currentDigit,
+      totalTrials: session.experiment.trials.length,
+      responses: session.trialResponses
+    };
   }
 
   async saveCapture(sessionId, imageData, captureData) {
     const session = this.sessions.get(sessionId);
-    // Implementation here
     this.resetTimeout(sessionId);
     return { success: true };
   }
 
   processResponse(sessionId, response) {
     const session = this.sessions.get(sessionId);
-    // Implementation here
+    if (!session) return { success: false, error: 'Session not found' };
+    
+    session.trialResponses.push(response);
     this.resetTimeout(sessionId);
     return { success: true };
   }

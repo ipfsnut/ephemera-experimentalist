@@ -1,23 +1,18 @@
-const NSTExperiment = require('../experiments/NSTExperiment');
+const NumberSwitchingTask = require('../experiments/numberSwitching');
 
 const experiments = {
-  NST: NSTExperiment
+  'NST': NumberSwitchingTask
 };
 
-const getExperiment = (experimentType) => {
-  if (!experimentType) {
+const getExperiment = (type) => {
+  if (!type) {
     throw new Error('Experiment type is required');
   }
-
-  const ExperimentClass = experiments[experimentType];
+  const ExperimentClass = experiments[type];
   if (!ExperimentClass) {
-    throw new Error(`Experiment ${experimentType} not found`);
+    throw new Error(`Experiment ${type} not found`);
   }
-
   return ExperimentClass;
 };
 
-module.exports = {
-  experiments,
-  getExperiment
-};
+module.exports = { experiments, getExperiment };

@@ -1,5 +1,5 @@
 {
-  "name": "ephemeral-observer",
+  "name": "ephemera-experimentalist",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -9,8 +9,11 @@
     "start:backend": "cd backend && node src/server.js",
     "install": "concurrently \"cd frontend && npm install\" \"cd backend && npm install\"",
     "build": "concurrently \"cd frontend && npm run build\" \"cd backend && npm run build\"",
-    "start:mongo": "node scripts/start-mongo.js"
-  },
+    "start:mongo": "node scripts/start-mongo.js",
+    "test:backend": "cd backend && npm test",
+    "test:frontend": "cd frontend && npm test",
+    "test:all": "concurrently --names \"BACKEND,FRONTEND\" \"npm run test:backend\" \"npm run test:frontend\""
+},
   "keywords": [],
   "author": "",
   "license": "ISC",
