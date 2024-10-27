@@ -5,7 +5,7 @@ import useResponseHandler from './Trial/useResponseHandler'
 import useTrialTransition from './Trial/useTrialTransition'
 
 const NST = () => {
-  const { state: experimentState } = useExperiment()
+  const { state: experimentState, dispatch } = useExperiment()
   const [state, setState] = useState({
     currentTrial: 0,
     currentDigit: 0,
@@ -20,11 +20,31 @@ const NST = () => {
   })
 
   useEffect(() => {
-    console.log('Experiment state in NST:', experimentState)
-    if (experimentState.sessionId) {
-      // Initialize experiment
+    const initializeTrialData = async () => {
+      const response = await fetch('/api/experiment/start', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          sessionId: experimentState.sessionId,
+          experimentType: 'NST',
+          config: {
+            numTrials: 14,
+            effortLevels: ['1', '2', '3', '4', '5', '6', '7']
+          }
+        })
+      })
+      
+      const data = await response.json()
+      console.log('Generated trial data:', data)
+      dispatch({ type: 'SET_TRIAL_DATA', payload: data.trials })
     }
-  }, [experimentState])
+
+    if (experimentState.sessionId) {
+      initializeTrialData()
+    }
+  }, [experimentState.sessionId, dispatch])
 
   useEffect(() => {
     console.log('Component State:', state)

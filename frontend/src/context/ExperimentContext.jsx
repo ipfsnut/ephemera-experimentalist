@@ -37,6 +37,7 @@ const experimentReducer = (state, action) => {
     default:
       return state
   }
+  
 }
 
 export const ExperimentProvider = ({ children }) => {
@@ -64,3 +65,5 @@ export const useExperiment = () => {
   }
   return context
 }
+
+
