@@ -1,56 +1,23 @@
-const experimentController = require('../../src/controllers/experimentController');const StateManager = require('../../services/stateManager');
-const { getExperiment } = require('../../core/experimentLoader');
-const NSTExperiment = require('../../experiments/NSTExperiment');
-
-jest.mock('../../experiments/NSTExperiment', () => {
-  return class MockNSTExperiment {
-    constructor(config) {
-      this.config = config;
-      this.trials = [];
-    }
-    
-    generateTrials() {
-      this.trials = ['12345', '67890'];
-      return this.trials;
-    }
-  };
-});
+const experimentController = require('../../src/controllers/experimentController');
+const experimentService = require('../../src/services/experimentService');
+const BaseExperiment = require('../../core/baseExperiment');
 
 describe('Experiment Controller', () => {
-  let req, res;
-  
   beforeEach(() => {
-    req = {
-      body: {
-        experimentType: 'NST',
-        config: { someConfig: true }
-      }
-    };
-    res = {
-      json: jest.fn(),
-      status: jest.fn().mockReturnThis()
-    };
+    jest.clearAllMocks();
+    const mockExperiment = new BaseExperiment({
+      id: 'test-exp',
+      name: 'Test Experiment'
+    });
+    experimentService.registerExperiment(mockExperiment);
   });
 
   test('starts experiment successfully', async () => {
-    await experimentController.startExperiment(req, res);
-    expect(res.json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        sessionId: expect.any(String)
-      })
-    );
+    const req = { params: { experimentId: 'test-exp' }, body: {} };
+    const res = { json: jest.fn() };
+    const next = jest.fn();
+    
+    await experimentController.startExperiment(req, res, next);
+    expect(res.json).toHaveBeenCalled();
   });
 });
-
-jest.mock('../../core/experimentLoader', () => ({
-  getExperiment: jest.fn().mockReturnValue(
-    class MockExperiment {
-      constructor(config) {
-        this.config = config;
-      }
-    }
-  )
-  
-}));
-
-

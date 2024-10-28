@@ -1,6 +1,8 @@
-const BaseExperiment = require('../core/baseExperiment');
-const { generateTrialNumbers } = require('../utils/markovChain');
+const BaseExperiment = require('../../core/baseExperiment');
 const logger = require('../utils/logger');
+const { generateTrialNumbers } = require('../../utils/markovChain');
+
+
 
 class NSTService extends BaseExperiment {
   constructor() {

@@ -1,24 +1,66 @@
 import React, { useEffect } from 'react';
+import { useExperiment } from '../../../context/ExperimentContext';
 import useTrialTransition from './useTrialTransition';
 import useKeyboardHandler from './useKeyboardHandler';
 import useResponseHandler from './useResponseHandler';
+import useFocusManagement from './useFocusManagement';
 
-const TrialDisplay = ({ currentDigit, currentTrial, totalTrials, onTrialComplete }) => {
-  const { isTransitioning, displayDigit } = useTrialTransition(currentDigit);
-  const { handleResponse, startTrial } = useResponseHandler(currentDigit, onTrialComplete);
+const TrialDisplay = () => {
+
+
+  const { state, getNextDigit, dispatch, saveTrialData } = useExperiment();
+  const { currentTrial, totalTrials, trialData, isSaving } = state;
   
-  useKeyboardHandler(handleResponse, isTransitioning);
+  const { isTransitioning, displayDigit } = useTrialTransition(trialData?.digit);
+  const { handleResponse, startTrial } = useResponseHandler(trialData?.digit);
+  const inputRef = useFocusManagement(isTransitioning);
+  
+
+  const handleTrialResponse = async (response) => {
+    const trialResponse = await handleResponse(response);
+    await saveTrialData({
+      trial: currentTrial,
+      digit: displayDigit,
+      response,
+      ...trialResponse
+    });
+    
+    if (currentTrial >= totalTrials) {
+      dispatch({ type: 'COMPLETE_EXPERIMENT' });
+    } else {
+      getNextDigit();
+    }
+  };
+  
+  useKeyboardHandler(handleTrialResponse, isTransitioning || isSaving);
 
   useEffect(() => {
-    if (!isTransitioning) {
-      startTrial();
-    }
-    console.log('Current state:', { currentDigit, displayDigit, isTransitioning });
+    if (!isTransitioning && !trialData) {
 
+
+
+
+
+
+
+
+
+
+      const trialStartTime = startTrial();
+      dispatch({ 
+        type: 'UPDATE_TRIAL_METRICS', 
+        payload: { startTime: trialStartTime } 
+      });
+    }
   }, [isTransitioning]);
 
+
+  if (state.isComplete) {
+    return <div>Experiment Complete!</div>;
+  }
+
   return (
-    <div className="trial-display">
+    <div className="trial-display" ref={inputRef}>
       <div className="trial-counter">
         Trial {currentTrial}/{totalTrials}
       </div>
@@ -35,4 +77,3 @@ const TrialDisplay = ({ currentDigit, currentTrial, totalTrials, onTrialComplete
 };
 
 export default TrialDisplay;
-

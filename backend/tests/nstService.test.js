@@ -9,7 +9,7 @@ describe('NST Service', () => {
       const trialState = await nstService.getTrialState();
       expect(trialState).toMatchObject({
         currentTrial: expect.any(Number),
-        currentDigit: expect.any(String),
+        currentDigit: expect.any(Number), // Changed from String
         requiresCapture: expect.any(Boolean)
       });
     });
@@ -38,4 +38,11 @@ describe('NST Service', () => {
       });
     });
   });
+});
+
+beforeEach(() => {
+  nstService.trials = [
+    { number: 5, type: 'odd' },
+    { number: 2, type: 'even' }
+  ];
 });

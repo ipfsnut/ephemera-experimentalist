@@ -21,8 +21,7 @@ beforeEach(async () => {
 });
 
 afterAll(async () => {
-  await mongoose.disconnect();
-  await mongod.stop();
+  await new Promise(resolve => setTimeout(resolve, 500)); // Clean shutdown
 });
 
 // Add our experiment test utilities

@@ -1,15 +1,27 @@
 const experimentService = require('../src/services/experimentService');
-const BaseExperiment = require('../../core/baseExperiment');
+const BaseExperiment = require('../core/baseExperiment');
 
 describe('Experiment Service', () => {
   describe('Experiment Registration', () => {
     test('registers and retrieves experiments', async () => {
-      const mockExperiment = new BaseExperiment({
+      class TestExperiment extends BaseExperiment {
+        constructor(config) {
+          super(config);
+          this.id = config.id;
+          this.name = config.name;
+          this.description = config.description;
+        }
+
+        start(config) {
+          return { status: 'started', config };
+        }
+      }
+
+      const mockExperiment = new TestExperiment({
         id: 'test-exp',
         name: 'Test Experiment',
         description: 'Test experiment description'
-      });
-      
+      });      
       experimentService.registerExperiment(mockExperiment);
       const experiments = await experimentService.getAvailableExperiments();
       

@@ -1,11 +1,9 @@
 const express = require('express');
 const cors = require('cors');
 const winston = require('winston');
-const eventRoutes = require('./routes/eventRoutes');
-const experimentRoutes = require('./routes/experimentRoutes');
+const routes = require('./routes');
 const { connectDB } = require('../database');
 
-// Goal 1: Server Setup
 const app = express();
 const port = process.env.PORT || 5069;
 
@@ -38,8 +36,7 @@ app.use(express.json());
 
 // Routes
 console.log('Server starting...');
-app.use('/api/events', eventRoutes);
-app.use('/api/experiment', experimentRoutes);
+app.use('/api', routes);
 console.log('Routes registered');
 
 // Error handling middleware
