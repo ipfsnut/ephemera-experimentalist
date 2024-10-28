@@ -11,8 +11,8 @@ class PlatformService {
   }
 
   async checkHealth() {
-    const status = {
-      status: 'healthy',
+    const health = {
+      health: 'healthy',
       timestamp: Date.now(),
       services: {
         database: true,
@@ -20,16 +20,7 @@ class PlatformService {
         experimentRunner: true
       }
     };
-    return status;
-  }
-
-  async getMetrics() {
-    return {
-      activeExperiments: this.experiments.size,
-      totalSessions: await this.getTotalSessions(),
-      systemLoad: process.cpuUsage(),
-      memoryUsage: process.memoryUsage()
-    };
+    return health;
   }
 
   async listExperiments() {

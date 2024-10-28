@@ -1,5 +1,4 @@
-const experimentController = require('../../controllers/experimentController');
-const StateManager = require('../../services/stateManager');
+const experimentController = require('../../src/controllers/experimentController');const StateManager = require('../../services/stateManager');
 const { getExperiment } = require('../../core/experimentLoader');
 const NSTExperiment = require('../../experiments/NSTExperiment');
 

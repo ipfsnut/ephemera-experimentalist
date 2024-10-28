@@ -1,69 +1,104 @@
-const { generateSessionId } = require('../../utils/sessionGenerator');
-const NSTExperiment = require('../../experiments/NSTExperiment');
-const stateManager = require('../../services/stateManager');
+const experimentService = require('../services/experimentService');
+const logger = require('../utils/logger');
 
-exports.startExperiment = async (req, res) => {
-  try {
-    const { experimentType, config } = req.body;
-    console.log('Starting experiment:', { experimentType, config });
-    const experiment = new NSTExperiment(config);
-    const sessionId = generateSessionId();
-    console.log('Created session:', sessionId);
-    stateManager.createSession(sessionId, experiment);
-    return res.json({ sessionId });
-  } catch (error) {
-    console.error('Start experiment error:', error);
-    return res.status(500).json({ message: error.message });
-  }
-};
-
-exports.getNextDigit = async (req, res) => {
-  const { sessionId } = req.params;
-  console.log('Getting next digit for session:', sessionId);
-  const session = StateManager.sessions.get(sessionId);
-  
-  if (!session) {
-    console.error('Session not found:', sessionId);
-    return res.status(404).json({
-      message: 'Session not found'
-    });
+class ExperimentController {
+  async listExperiments(req, res, next) {
+    try {
+      const experiments = await experimentService.getAvailableExperiments();
+      res.json(experiments);
+    } catch (error) {
+      logger.error('Failed to list experiments:', error);
+      next(error);
+    }
   }
 
-  try {
-    const nextDigit = session.experiment.getNextDigit();
-    console.log('Generated digit:', nextDigit);
-    const trialState = {
-      currentTrialIndex: session.experiment.currentTrialIndex,
-      currentDigit: session.experiment.state.currentDigit,
-      totalTrials: session.experiment.trials.length
-    };
-    console.log('Trial state:', trialState);
-    return res.json({
-      digit: nextDigit,
-      trialState,
-      captureRequired: session.experiment.shouldCaptureImage()
-    });
-  } catch (error) {
-    console.error('Get next digit error:', error);
-    return res.status(500).json({ message: error.message });
+  async getExperimentInfo(req, res, next) {
+    try {
+      const { experimentId } = req.params;
+      const info = await experimentService.getExperimentInfo(experimentId);
+      res.json(info);
+    } catch (error) {
+      logger.error('Failed to get experiment info:', error);
+      next(error);
+    }
   }
-};
-exports.submitCapture = async (req, res) => {
-  const { sessionId } = req.params;
-  const { imageData, captureData } = req.body;
-  const result = await StateManager.saveCapture(sessionId, imageData, captureData);
-  res.json(result);
-};
 
-exports.submitResponse = async (req, res) => {
-  const { sessionId } = req.params;
-  const { response } = req.body;
-  const result = StateManager.processResponse(sessionId, response);
-  res.json(result);
-};
+  async getConfig(req, res, next) {
+    try {
+      const { experimentId } = req.params;
+      const config = await experimentService.getConfig(experimentId);
+      res.json(config);
+    } catch (error) {
+      logger.error('Failed to get config:', error);
+      next(error);
+    }
+  }
 
-exports.getExperimentState = async (req, res) => {
-  const { sessionId } = req.params;
-  const state = StateManager.getSessionState(sessionId);
-  res.json(state);
-};
+  async updateConfig(req, res, next) {
+    try {
+      const { experimentId } = req.params;
+      const config = await experimentService.updateConfig(experimentId, req.body);
+      res.json(config);
+    } catch (error) {
+      logger.error('Failed to update config:', error);
+      next(error);
+    }
+  }
+
+  async validateConfig(req, res, next) {
+    try {
+      const { experimentId } = req.params;
+      const validation = await experimentService.validateConfig(experimentId, req.body);
+      res.json(validation);
+    } catch (error) {
+      logger.error('Config validation failed:', error);
+      next(error);
+    }
+  }
+
+  async startExperiment(req, res, next) {
+    try {
+      const { experimentId } = req.params;
+      const session = await experimentService.startExperiment(experimentId, req.body);
+      res.json(session);
+    } catch (error) {
+      logger.error('Failed to start experiment:', error);
+      next(error);
+    }
+  }
+
+  async pauseExperiment(req, res, next) {
+    try {
+      const { experimentId } = req.params;
+      const result = await experimentService.pauseExperiment(experimentId);
+      res.json(result);
+    } catch (error) {
+      logger.error('Failed to pause experiment:', error);
+      next(error);
+    }
+  }
+
+  async resumeExperiment(req, res, next) {
+    try {
+      const { experimentId } = req.params;
+      const result = await experimentService.resumeExperiment(experimentId);
+      res.json(result);
+    } catch (error) {
+      logger.error('Failed to resume experiment:', error);
+      next(error);
+    }
+  }
+
+  async abortExperiment(req, res, next) {
+    try {
+      const { experimentId } = req.params;
+      const result = await experimentService.abortExperiment(experimentId);
+      res.json(result);
+    } catch (error) {
+      logger.error('Failed to abort experiment:', error);
+      next(error);
+    }
+  }
+}
+
+module.exports = new ExperimentController();

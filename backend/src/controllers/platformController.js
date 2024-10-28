@@ -12,16 +12,6 @@ class PlatformController {
     }
   }
 
-  async getMetrics(req, res, next) {
-    try {
-      const metrics = await platformService.getMetrics();
-      res.json(metrics);
-    } catch (error) {
-      logger.error('Failed to retrieve metrics:', error);
-      next(error);
-    }
-  }
-
   async listExperiments(req, res, next) {
     try {
       const experiments = await platformService.listExperiments();

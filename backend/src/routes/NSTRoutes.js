@@ -1,27 +1,22 @@
 const express = require('express');
 const router = express.Router();
-const nstController = require('../../controllers/nstController');
+const nstController = require('../controllers/nstController');
 
-// NST-specific configuration
-router.get('/config', nstController.getConfig);
-router.put('/config', nstController.updateConfig);
+// Trial Management
+router.get('/next-digit', nstController.getNextDigit);
+router.post('/response', nstController.submitResponse);
+router.get('/progress', nstController.getProgress);
 
-// Trial management
-router.post('/start', nstController.startExperiment);
-router.get('/:sessionId/next-digit', nstController.getNextDigit);
-router.post('/:sessionId/response', nstController.submitResponse);
+// Capture Control
+router.post('/capture', nstController.submitCapture);
+router.get('/capture-config', nstController.getCaptureConfig);
 
-// Data collection
-router.post('/:sessionId/capture', nstController.submitCapture);
-router.get('/:sessionId/state', nstController.getExperimentState);
-router.get('/:sessionId/results', nstController.getResults);
+// Session State
+router.get('/state', nstController.getExperimentState);
+router.get('/trial-state', nstController.getTrialState);
 
-// Enhanced trial management
-router.get('/:sessionId/progress', nstController.getProgress);
-router.post('/:sessionId/checkpoint', nstController.saveCheckpoint);
-router.get('/:sessionId/performance', nstController.getPerformanceMetrics);
-
-// Calibration and setup
-router.post('/:sessionId/calibrate', nstController.calibrateSession);
+// NST Configuration
+router.get('/config', nstController.getNSTConfig);
+router.put('/config', nstController.updateNSTConfig);
 
 module.exports = router;
