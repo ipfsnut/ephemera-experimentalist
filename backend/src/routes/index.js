@@ -1,13 +1,21 @@
 const express = require('express');
-const eventRoutes = require('./eventRoutes');
+const platformRoutes = require('./platformRoutes');
 const experimentRoutes = require('./experimentRoutes');
+const dataRoutes = require('./dataRoutes');
+const nstRoutes = require('./NSTRoutes');
 
 const router = express.Router();
 
-// General application routes
-router.use('/events', eventRoutes);
+// Core platform routes
+router.use('/platform', platformRoutes);
 
-// Experiment-specific routes
+// Experiment framework routes
 router.use('/experiments', experimentRoutes);
+
+// Data management and export routes
+router.use('/data', dataRoutes);
+
+// Direct NST routes for specialized access
+router.use('/nst', nstRoutes);
 
 module.exports = router;

@@ -1,0 +1,119 @@
+# Ephemera Full-Stack Integration ToDo
+
+
+
+
+/src
+  /routes
+    - platformRoutes.js    (Platform management)
+    - experimentRoutes.js  (Experiment framework)
+    - NSTRoutes.js        (NST specific endpoints)
+  /controllers
+    - platformController.js
+    - experimentController.js
+    - nstController.js
+  /services
+    - platformService.js
+    - experimentService.js
+    - nstService.js
+
+
+
+
+
+
+## 1. Controller Implementation
+Backend:
+- platformController.js
+  - checkHealth() - System status checks
+  - getMetrics() - Performance metrics
+  - listExperiments() - Available experiment types
+  - getSettings() - Global platform config
+  - updateSettings() - Platform config updates
+
+Frontend:
+- PlatformStatus.vue - Health/metrics display
+- ExperimentList.vue - Available experiments
+- Settings.vue - Platform configuration
+- MetricsDisplay.vue - Performance visualization
+
+## 2. Service Layer Development
+Backend:
+- platformService.js
+  - System health monitoring
+  - Experiment registration
+  - Global settings management
+
+Frontend:
+- platformService.ts - API integration
+- experimentService.ts - Experiment management
+- dataService.ts - Results handling
+
+## 3. Database Schema Updates
+Backend:
+- Session.js
+- ExperimentConfig.js
+
+Frontend:
+- types/Session.ts
+- types/ExperimentConfig.ts
+- store/sessionModule.ts
+- store/configModule.ts
+
+## 4. Middleware Development
+Backend:
+- requestValidation.js
+- errorHandler.js
+- sessionManager.js
+
+Frontend:
+- axios interceptors
+- auth guards
+- error boundaries
+- session persistence
+
+## 5. Testing Infrastructure
+Backend:
+- Unit Tests
+- Integration Tests
+- Performance Tests
+
+Frontend:
+- Component tests
+- Store tests
+- E2E tests
+- API integration tests
+
+## 6. Documentation
+Backend:
+- API Documentation
+- Implementation Guides
+
+Frontend:
+- Component documentation
+- State management docs
+- Integration examples
+- Setup guides
+
+## 7. Monitoring Setup
+Backend:
+- Request logging
+- Error tracking
+- Performance metrics
+- Session analytics
+
+Frontend:
+- Error reporting
+- Performance monitoring
+- User analytics
+- Debug logging
+
+## 8. Development Process
+1. Platform status vertical slice
+2. Experiment setup flow
+3. NST trial implementation
+4. Data collection and export
+5. Analysis and results
+6. Documentation
+7. Testing
+8. Performance optimization

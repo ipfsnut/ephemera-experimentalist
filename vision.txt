@@ -9,7 +9,6 @@
   - Trial display
   - Response collection
   - Progress indicators
-  - Results visualization
 - Common styling and theming
 
 2. Experiment Framework
@@ -40,12 +39,9 @@ NST (Number Switching Task) Implementation:
 - Trial Structure:
   - Stimulus generation
   - Response validation
-  - Performance metrics
 - Data Collection:
   - Response times
   - Accuracy
-  - Switch costs
-  - Learning effects
 
 ## API Structure
 /api/platform/
@@ -61,39 +57,6 @@ NST (Number Switching Task) Implementation:
 /api/data/
 - /export - Data export endpoints
 - /analysis - Analysis endpoints
-
-## Implementation Phases
-1. Framework Development
-- Build experiment base class
-- Implement core platform components
-- Establish API structure
-- Create shared utilities
-
-2. NST Migration
-- Port existing NST code to new framework
-- Implement NST-specific components
-- Validate against original requirements
-- Performance optimization
-
-3. Platform Features
-- Dashboard implementation
-- Results visualization
-- Export functionality
-- Documentation system
-
-4. Additional Experiments
-- Template creation
-- Documentation for experiment development
-- Testing framework
-- Deployment guidelines
-
-## Development Standards
-- React for UI components
-- Redux for state management
-- Jest for testing
-- Standardized error handling
-- Performance monitoring
-
 
 
 graph TB

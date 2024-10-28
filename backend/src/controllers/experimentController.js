@@ -1,6 +1,6 @@
-const { generateSessionId } = require('../utils/sessionGenerator');
-const NSTExperiment = require('../experiments/NSTExperiment');
-const stateManager = require('../services/stateManager');
+const { generateSessionId } = require('../../utils/sessionGenerator');
+const NSTExperiment = require('../../experiments/NSTExperiment');
+const stateManager = require('../../services/stateManager');
 
 exports.startExperiment = async (req, res) => {
   try {

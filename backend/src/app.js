@@ -2,7 +2,9 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const helmet = require('helmet');
-const eventRoutes = require('./routes/eventRoutes');
+const platformRoutes = require('./routes/platformRoutes');
+
+
 
 const app = express();
 
@@ -26,8 +28,9 @@ app.get('/test', (req, res) => {
   res.json({ message: 'API is working' });
 });
 
-// Event routes
-app.use('/api/events', eventRoutes);
+// Platform routes
+app.use('/api/platform', platformRoutes);
+
 
 // Error handling middleware
 app.use((err, req, res, next) => {
