@@ -22,3 +22,5 @@ const useTrialCompletion = () => {
 
   return { handleTrialComplete };
 };
+
+export default useTrialCompletion;

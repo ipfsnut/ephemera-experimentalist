@@ -5,7 +5,7 @@ import useResponseHandler from './useResponseHandler';
 
 const TrialDisplay = ({ currentDigit, currentTrial, totalTrials, onTrialComplete }) => {
   const { isTransitioning, displayDigit } = useTrialTransition(currentDigit);
-  const { handleResponse, startTrial } = useResponseHandler(onTrialComplete);
+  const { handleResponse, startTrial } = useResponseHandler(currentDigit, onTrialComplete);
   
   useKeyboardHandler(handleResponse, isTransitioning);
 
@@ -13,6 +13,8 @@ const TrialDisplay = ({ currentDigit, currentTrial, totalTrials, onTrialComplete
     if (!isTransitioning) {
       startTrial();
     }
+    console.log('Current state:', { currentDigit, displayDigit, isTransitioning });
+
   }, [isTransitioning]);
 
   return (
@@ -33,3 +35,4 @@ const TrialDisplay = ({ currentDigit, currentTrial, totalTrials, onTrialComplete
 };
 
 export default TrialDisplay;
+
