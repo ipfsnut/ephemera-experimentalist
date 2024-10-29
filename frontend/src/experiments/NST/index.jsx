@@ -9,8 +9,10 @@ const NST = () => {
   const [experimentState, setExperimentState] = useState({
     currentDigit: null,
     currentTrial: 0,
+    currentDigitIndex: 0,
     totalTrials: 0,
-    trials: []
+    trials: [],
+    sessionId: null
   })
 
   useEffect(() => {
@@ -25,11 +27,35 @@ const NST = () => {
     }).then(r => r.json())
 
     setExperimentState({
-      currentDigit: response.trials[0].number,
+      currentDigit: response.currentDigit,
       currentTrial: 0,
+      currentDigitIndex: 0,
       totalTrials: config.numTrials,
-      trials: response.trials
+      trials: response.trials,
+      sessionId: response.sessionId
     })
+    
+    dispatch({ type: 'SET_SESSION', payload: response.sessionId })
+  }
+
+  const handleDigitComplete = async () => {
+    const nextDigitResponse = await fetch(`/api/experiments/nst/next-digit?trialIndex=${experimentState.currentTrial}&digitIndex=${experimentState.currentDigitIndex + 1}`).then(r => r.json())
+    
+    if (nextDigitResponse.isLastDigit) {
+      setExperimentState(prev => ({
+        ...prev,
+        currentTrial: prev.currentTrial + 1,
+        currentDigitIndex: 0,
+        currentDigit: nextDigitResponse.nextTrialDigit
+      }))
+      handleTrialComplete()
+    } else {
+      setExperimentState(prev => ({
+        ...prev,
+        currentDigit: nextDigitResponse.digit,
+        currentDigitIndex: nextDigitResponse.digitIndex
+      }))
+    }
   }
 
   return experimentState.currentDigit ? (
@@ -37,7 +63,7 @@ const NST = () => {
       currentDigit={experimentState.currentDigit}
       currentTrial={experimentState.currentTrial}
       totalTrials={experimentState.totalTrials}
-      onTrialComplete={handleTrialComplete}
+      onDigitComplete={handleDigitComplete}
     />
   ) : (
     <div>Loading experiment...</div>

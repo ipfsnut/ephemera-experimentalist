@@ -12,7 +12,7 @@ const useResponseHandler = (currentDigit) => {
     };
 
     try {
-      const result = await fetch(`/api/nst/response`, {
+      const result = await fetch(`/api/experiments/nst/response`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -23,7 +23,6 @@ const useResponseHandler = (currentDigit) => {
       
       const validatedResponse = await result.json();
       dispatch({ type: 'RECORD_RESPONSE', payload: validatedResponse });
-      
     } catch (error) {
       console.error('Response submission failed:', error);
     }

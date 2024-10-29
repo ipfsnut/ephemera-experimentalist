@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const session = require('express-session');
+const MongoStore = require('connect-mongo');
 const winston = require('winston');
 const routes = require('./routes');
 const { connectDB } = require('../database');
@@ -24,7 +26,22 @@ if (process.env.NODE_ENV !== 'production') {
   }));
 }
 
-// Middleware
+// Session configuration with MongoDB store
+app.use(session({
+  secret: 'nst-experiment-secret',
+  resave: false,
+  saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGODB_URI || 'mongodb://localhost:27017/ephemera-nst',
+    ttl: 24 * 60 * 60
+  }),
+  cookie: { 
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
+}));
+
+// CORS configuration
 const corsOptions = {
   origin: 'http://localhost:5173',
   credentials: true,
@@ -45,17 +62,6 @@ app.use((err, req, res, next) => {
   res.status(err.status || 500).json({
     message: err.message,
     error: process.env.NODE_ENV === 'production' ? {} : err,
-  });
-});
-
-// Global error handler
-app.use((err, req, res, next) => {
-  err.statusCode = err.statusCode || 500;
-  err.status = err.status || 'error';
-
-  res.status(err.statusCode).json({
-    status: err.status,
-    message: err.message,
   });
 });
 

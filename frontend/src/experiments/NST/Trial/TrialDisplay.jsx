@@ -3,9 +3,9 @@ import useTrialTransition from './useTrialTransition';
 import useKeyboardHandler from './useKeyboardHandler';
 import useResponseHandler from './useResponseHandler';
 
-const TrialDisplay = ({ currentDigit, currentTrial, totalTrials, onTrialComplete }) => {
+const TrialDisplay = ({ currentDigit, currentTrial, totalTrials, onDigitComplete }) => {
   const { isTransitioning, displayDigit } = useTrialTransition(currentDigit);
-  const { handleResponse, startTrial } = useResponseHandler(currentDigit, onTrialComplete);
+  const { handleResponse, startTrial } = useResponseHandler(currentDigit, onDigitComplete);
   
   useKeyboardHandler(handleResponse, isTransitioning);
 
@@ -22,7 +22,7 @@ const TrialDisplay = ({ currentDigit, currentTrial, totalTrials, onTrialComplete
       </div>
       
       <div className={`number-display ${isTransitioning ? 'transitioning' : ''}`}>
-        <h1>{currentDigit[experimentState.currentTrial]}</h1>
+        <h1>{displayDigit}</h1>
       </div>
       
       <div className="instruction-text">
