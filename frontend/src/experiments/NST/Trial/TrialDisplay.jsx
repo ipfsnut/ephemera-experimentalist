@@ -1,72 +1,28 @@
 import React, { useEffect } from 'react';
-import { useExperiment } from '../../../context/ExperimentContext';
 import useTrialTransition from './useTrialTransition';
 import useKeyboardHandler from './useKeyboardHandler';
 import useResponseHandler from './useResponseHandler';
-import useFocusManagement from './useFocusManagement';
 
-const TrialDisplay = () => {
-
-
-  const { state, getNextDigit, dispatch, saveTrialData } = useExperiment();
-  const { currentTrial, totalTrials, trialData, isSaving } = state;
+const TrialDisplay = ({ currentDigit, currentTrial, totalTrials, onTrialComplete }) => {
+  const { isTransitioning, displayDigit } = useTrialTransition(currentDigit);
+  const { handleResponse, startTrial } = useResponseHandler(currentDigit, onTrialComplete);
   
-  const { isTransitioning, displayDigit } = useTrialTransition(trialData?.digit);
-  const { handleResponse, startTrial } = useResponseHandler(trialData?.digit);
-  const inputRef = useFocusManagement(isTransitioning);
-  
-
-  const handleTrialResponse = async (response) => {
-    const trialResponse = await handleResponse(response);
-    await saveTrialData({
-      trial: currentTrial,
-      digit: displayDigit,
-      response,
-      ...trialResponse
-    });
-    
-    if (currentTrial >= totalTrials) {
-      dispatch({ type: 'COMPLETE_EXPERIMENT' });
-    } else {
-      getNextDigit();
-    }
-  };
-  
-  useKeyboardHandler(handleTrialResponse, isTransitioning || isSaving);
+  useKeyboardHandler(handleResponse, isTransitioning);
 
   useEffect(() => {
-    if (!isTransitioning && !trialData) {
-
-
-
-
-
-
-
-
-
-
-      const trialStartTime = startTrial();
-      dispatch({ 
-        type: 'UPDATE_TRIAL_METRICS', 
-        payload: { startTime: trialStartTime } 
-      });
+    if (!isTransitioning) {
+      startTrial();
     }
   }, [isTransitioning]);
 
-
-  if (state.isComplete) {
-    return <div>Experiment Complete!</div>;
-  }
-
   return (
-    <div className="trial-display" ref={inputRef}>
+    <div className="trial-display">
       <div className="trial-counter">
-        Trial {currentTrial}/{totalTrials}
+        Trial {currentTrial + 1}/{totalTrials}
       </div>
       
       <div className={`number-display ${isTransitioning ? 'transitioning' : ''}`}>
-        <h1>{displayDigit}</h1>
+        <h1>{currentDigit[experimentState.currentTrial]}</h1>
       </div>
       
       <div className="instruction-text">

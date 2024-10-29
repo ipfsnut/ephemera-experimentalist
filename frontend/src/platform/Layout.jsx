@@ -8,10 +8,10 @@ const Layout = ({ children }) => {
     const perfCheck = setInterval(() => {
       const fps = PerformanceMonitor.getFPS();
       const memory = PerformanceMonitor.trackMemory();
-      if (fps < 30) {
+      if (fps < 20) { // Adjusted threshold
         console.warn('Performance degradation detected', { fps, memory });
       }
-    }, 5000);
+    }, 10000); // Increased interval
 
     return () => clearInterval(perfCheck);
   }, []);

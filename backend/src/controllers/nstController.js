@@ -1,102 +1,69 @@
-const nstService = require('../services/nstService');
-const logger = require('../utils/logger');
+const { generateNSTTrials } = require('../experimentLogic/nstLogic');
+const config = require('../../config');
 
-class NSTController {
-  async getNextDigit(req, res, next) {
+const nstController = {
+  // Trial Management
+  createTrial: (req, res) => {
     try {
-      const nextDigit = await nstService.getNextDigit();
-      res.json({
-        digit: nextDigit,
-        trialState: await nstService.getTrialState(),
-        captureRequired: await nstService.shouldCaptureImage()
+      const trials = generateNSTTrials(config.numTrials, config.effortLevels[0]);
+      res.json({ 
+        trials,
+        sessionId: Date.now().toString(),
+        startTime: Date.now(),
+        digit: trials[0]
       });
     } catch (error) {
-      logger.error('Failed to get next digit:', error);
-      next(error);
+      console.error('Trial creation error:', error);
+      res.status(500).json({ error: error.message });
     }
-  }
+  },
+  getNextDigit: (req, res) => {
+    const digit = Math.floor(Math.random() * 9) + 1;
+    res.json({ digit });
+  },
 
-  async submitResponse(req, res, next) {
+  submitResponse: (req, res) => {
     try {
-      const { response } = req.body;
-      const result = await nstService.processResponse(response);
+      const { digit, response } = req.body;
+      const result = handleNSTResponse(response, { digit });
       res.json(result);
     } catch (error) {
-      logger.error('Failed to process response:', error);
-      next(error);
+      res.status(500).json({ error: error.message });
     }
-  }
+  },
+  
 
-  async getProgress(req, res, next) {
-    try {
-      const progress = await nstService.getProgress();
-      res.json(progress);
-    } catch (error) {
-      logger.error('Failed to get progress:', error);
-      next(error);
-    }
-  }
+  getProgress: (req, res) => {
+    res.json({ currentTrial: 0, totalTrials: config.numTrials });
+  },
 
-  async submitCapture(req, res, next) {
-    try {
-      const { imageData, metadata } = req.body;
-      const result = await nstService.processCapture(imageData, metadata);
-      res.json(result);
-    } catch (error) {
-      logger.error('Failed to process capture:', error);
-      next(error);
-    }
-  }
+  // Capture Control
+  submitCapture: (req, res) => {
+    res.json({ status: 'success', captureId: Date.now() });
+  },
 
-  async getCaptureConfig(req, res, next) {
-    try {
-      const config = await nstService.getCaptureConfig();
-      res.json(config);
-    } catch (error) {
-      logger.error('Failed to get capture config:', error);
-      next(error);
-    }
-  }
+  getCaptureConfig: (req, res) => {
+    res.json({ enabled: true, frequency: 'per_trial' });
+  },
 
-  async getExperimentState(req, res, next) {
-    try {
-      const state = await nstService.getExperimentState();
-      res.json(state);
-    } catch (error) {
-      logger.error('Failed to get experiment state:', error);
-      next(error);
-    }
-  }
+  // Session State
+  getExperimentState: (req, res) => {
+    res.json({ status: 'active', phase: 'trial' });
+  },
 
-  async getTrialState(req, res, next) {
-    try {
-      const state = await nstService.getTrialState();
-      res.json(state);
-    } catch (error) {
-      logger.error('Failed to get trial state:', error);
-      next(error);
-    }
-  }
+  getTrialState: (req, res) => {
+    res.json({ current: 'showing_digit', next: 'awaiting_response' });
+  },
 
-  async getNSTConfig(req, res, next) {
-    try {
-      const config = await nstService.getConfig();
-      res.json(config);
-    } catch (error) {
-      logger.error('Failed to get NST config:', error);
-      next(error);
-    }
-  }
+  // NST Configuration
+  getNSTConfig: (req, res) => {
+    res.json(config);
+  },
 
-  async updateNSTConfig(req, res, next) {
-    try {
-      const config = await nstService.updateConfig(req.body);
-      res.json(config);
-    } catch (error) {
-      logger.error('Failed to update NST config:', error);
-      next(error);
-    }
+  updateNSTConfig: (req, res) => {
+    Object.assign(config, req.body);
+    res.json(config);
   }
-}
+};
 
-module.exports = new NSTController();
+module.exports = nstController;

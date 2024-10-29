@@ -3,6 +3,7 @@ const router = express.Router();
 const nstController = require('../controllers/nstController');
 
 // Trial Management
+router.post('/trials', nstController.createTrial);
 router.get('/next-digit', nstController.getNextDigit);
 router.post('/response', nstController.submitResponse);
 router.get('/progress', nstController.getProgress);
@@ -20,3 +21,4 @@ router.get('/config', nstController.getNSTConfig);
 router.put('/config', nstController.updateNSTConfig);
 
 module.exports = router;
+

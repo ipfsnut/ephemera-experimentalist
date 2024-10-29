@@ -9,13 +9,13 @@ const router = express.Router();
 // Core platform routes
 router.use('/platform', platformRoutes);
 
-// Experiment framework routes
+// Direct NST routes for specialized access
+router.use('/experiments/nst', nstRoutes);
+
+// General experiment framework routes
 router.use('/experiments', experimentRoutes);
 
 // Data management and export routes
 router.use('/data', dataRoutes);
-
-// Direct NST routes for specialized access
-router.use('/nst', nstRoutes);
 
 module.exports = router;

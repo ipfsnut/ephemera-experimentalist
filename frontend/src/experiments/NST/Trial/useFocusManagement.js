@@ -11,3 +11,5 @@ const useFocusManagement = (isTransitioning) => {
 
   return inputRef;
 };
+
+export default useFocusManagement;
