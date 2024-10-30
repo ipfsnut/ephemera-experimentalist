@@ -2,7 +2,14 @@ const logger = require('../utils/logger');
 
 class PlatformService {
   constructor() {
-    this.experiments = new Map();
+    this.experiments = new Map([
+      ['nst', {
+        id: 'nst',
+        name: 'Number Switching Task',
+        description: 'A cognitive task measuring effort and task-switching ability',
+        status: 'active'
+      }]
+    ]);
     this.settings = {
       allowNewExperiments: true,
       maxConcurrentSessions: 10,

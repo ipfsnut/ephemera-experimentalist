@@ -1,23 +1,22 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router } from 'react-router-dom'
 import { ExperimentProvider } from './context/ExperimentContext'
+import { PlatformProvider } from './context/PlatformContext'
 import Layout from './platform/Layout'
-import Home from './components/Home'
+import AppRoutes from './routes/AppRoutes'
 import NST from './experiments/NST'
 import Results from './experiments/NST/Results'
 
 function App() {
   return (
-    <ExperimentProvider>
-      <Router>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/experiments/nst" element={<NST />} />
-            <Route path="/experiments/nst/results" element={<Results />} />
-          </Routes>
-        </Layout>
-      </Router>
-    </ExperimentProvider>
+    <PlatformProvider>
+      <ExperimentProvider>
+        <Router>
+          <Layout>
+            <AppRoutes />
+          </Layout>
+        </Router>
+      </ExperimentProvider>
+    </PlatformProvider>
   )
 }
 

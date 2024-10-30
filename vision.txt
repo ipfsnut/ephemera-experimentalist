@@ -2,50 +2,35 @@
 
 ## Core Architecture
 
-1. Platform Layer
-- Dashboard showing available experiments
-- Global state for experiment selection and status
-- Shared components library:
-  - Trial display
-  - Response collection
-  - Progress indicators
-- Common styling and theming
+1. Platform Layer (/platform/*)
+- Dashboard and experiment discovery
+- Global state and session management
+- Authentication and user tracking
+- Common UI components and styling
+- Platform-wide data collection
 
-2. Experiment Framework
-- Standard experiment lifecycle:
-  - Configuration
-  - Trial generation
-  - Response handling
-  - Data collection
-  - Results processing
-- Base experiment class with:
-  - Trial management
-  - Timing controls
-  - Data validation
-  - State transitions
-- Shared utilities:
-  - Random sequence generation
-  - Timing functions
-  - Data formatting
-  - Export tools
+2. Experiment Framework (/platform/experiments/*)
+- Standard experiment lifecycle hooks
+- Shared trial management
+- Common data collection patterns
+- Response validation
+- Progress tracking
+- Results processing
+- Export capabilities
 
-3. Individual Experiments
+3. Individual Experiments (/platform/experiments/<exp-id>/*)
 NST (Number Switching Task) Implementation:
-- Configuration:
-  - Difficulty levels
-  - Key mappings
-  - Trial counts
-  - Timing parameters
-- Trial Structure:
-  - Stimulus generation
+- Inherits platform session management
+- Uses framework trial management
+- Implements specific:
+  - Trial generation
   - Response validation
-- Data Collection:
-  - Response times
-  - Accuracy
+  - Data collection
+  - Results visualization
 
 ## API Structure
 /api/platform/
-- /status - Platform status
+- /health - Platform status
 - /experiments - List available experiments
 - /settings - Global platform settings
 
@@ -54,9 +39,13 @@ NST (Number Switching Task) Implementation:
 - /:experimentId/trials - Trial management
 - /:experimentId/results - Results storage and retrieval
 
-/api/data/
-- /export - Data export endpoints
-- /analysis - Analysis endpoints
+## Component Inheritance
+Platform -> Experiments -> Individual Experiment
+- UI Components cascade down
+- State management flows up
+- Data collection aggregates upward
+- Configuration inherits downward
+
 
 
 graph TB

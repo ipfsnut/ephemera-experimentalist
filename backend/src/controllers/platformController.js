@@ -42,6 +42,17 @@ class PlatformController {
       next(error);
     }
   }
+
+  async initializeSession(req, res, next) {
+    try {
+      const { experimentId } = req.body;
+      const session = await platformService.createSession(experimentId);
+      res.json(session);
+    } catch (error) {
+      logger.error('Failed to initialize session:', error);
+      next(error);
+    }
+  }
 }
 
 module.exports = new PlatformController();
