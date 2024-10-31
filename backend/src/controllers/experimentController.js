@@ -56,6 +56,34 @@ class ExperimentController {
     }
   }
 
+async handleResponse(req, res, next) {
+  try {
+      const { experimentId } = req.params;
+      const { sessionId, digit, response, timestamp } = req.body;
+        
+      console.log('Controller received response:', {
+          experimentId,
+          sessionId,
+          digit,
+          response,
+          timestamp
+      });
+        
+      const result = await experimentService.processResponse(
+          experimentId,
+          sessionId,
+          { digit, response, timestamp }
+      );
+        
+      console.log('Controller sending result:', result);
+      res.json(result);
+  } catch (error) {
+      console.error('Response processing error:', error);
+      next(error);
+  }
+}
+  
+
   async startExperiment(req, res, next) {
     try {
       const { experimentId } = req.params;

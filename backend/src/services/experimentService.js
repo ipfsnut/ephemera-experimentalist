@@ -47,6 +47,7 @@ class ExperimentService {
   }
 
   async startExperiment(experimentId, config) {
+    console.log('Starting experiment:', experimentId);
     const experiment = this.experiments.get(experimentId);
     if (!experiment) throw new Error('Experiment not found');
     return experiment.start(config);
@@ -76,6 +77,42 @@ class ExperimentService {
     }
     this.experiments.set(experiment.id, experiment);
   }
+
+  async getExperimentInstance(experimentId, sessionId) {
+    const experiment = this.experiments.get(experimentId);
+    if (!experiment) {
+      throw new Error('Experiment not found');
+    }
+    
+    // Track active sessions and their experiment instances
+    if (!this.activeSessions) {
+      this.activeSessions = new Map();
+    }
+    
+    let instance = this.activeSessions.get(sessionId);
+    if (!instance) {
+      instance = new NSTExperiment(experiment.config);
+      this.activeSessions.set(sessionId, instance);
+    }
+    
+    return instance;
+  }  
+
+  async processResponse(experimentId, sessionId, responseData) {
+    const experiment = await this.getExperimentInstance(experimentId, sessionId);
+    const result = experiment.processResponse(responseData.response);
+    
+    logger.info('Response processed:', {
+      experimentId,
+      sessionId,
+      response: responseData,
+      result
+    });
+    
+    return result;
+  }
 }
 
 module.exports = new ExperimentService();
+
+

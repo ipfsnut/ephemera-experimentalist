@@ -3,9 +3,7 @@ const cors = require('cors');
 const morgan = require('morgan');
 const helmet = require('helmet');
 const session = require('express-session');
-const platformRoutes = require('./routes/platformRoutes');
-const experimentRoutes = require('./routes/experimentRoutes');
-const nstRoutes = require('./routes/NSTRoutes');
+const routes = require('./routes');  // Change: Import consolidated routes
 
 const app = express();
 
@@ -41,9 +39,8 @@ app.get('/test', (req, res) => {
 });
 
 // Routes
-app.use('/api/platform', platformRoutes);
-app.use('/api/experiments', experimentRoutes);
-app.use('/api/nst', nstRoutes);
+// Change: Use consolidated routing through index.js
+app.use('/api', routes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

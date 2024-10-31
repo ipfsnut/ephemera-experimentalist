@@ -57,6 +57,21 @@ class PlatformService {
     // Placeholder for database integration
     return this.experiments.reduce((total, exp) => total + exp.sessions.length, 0);
   }
+  
+  async createSession(experimentId) {
+    const experiment = this.experiments.get(experimentId);
+    if (!experiment) {
+      throw new Error('Experiment not found');
+    }
+    return {
+      id: Date.now().toString(),
+      experimentId,
+      status: 'initialized',
+      startTime: Date.now()
+    };
+  }
 }
 
 module.exports = new PlatformService();
+
+

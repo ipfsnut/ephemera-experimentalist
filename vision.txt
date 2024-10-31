@@ -1,63 +1,47 @@
 # Ephemera Platform Vision
 
+# Ephemera Platform Vision
+
 ## Core Architecture
 
 1. Platform Layer (/platform/*)
 - Dashboard and experiment discovery
-- Global state and session management
+- Global state and session management via PlatformContext
 - Authentication and user tracking
 - Common UI components and styling
-- Platform-wide data collection
+- Platform-wide data collection through platformService
 
-2. Experiment Framework (/platform/experiments/*)
-- Standard experiment lifecycle hooks
-- Shared trial management
-- Common data collection patterns
-- Response validation
-- Progress tracking
-- Results processing
+2. NST Implementation (/experiments/nst/*)
+- Markov chain sequence generation
+- Trial management and validation
+- Response processing
+- Results visualization
+- Direct platform service integration
+
+3. Experiment Framework (shared resources)
+- Configuration inheritance
+- Common UI components
+- Data collection patterns
 - Export capabilities
-
-3. Individual Experiments (/platform/experiments/<exp-id>/*)
-NST (Number Switching Task) Implementation:
-- Inherits platform session management
-- Uses framework trial management
-- Implements specific:
-  - Trial generation
-  - Response validation
-  - Data collection
-  - Results visualization
 
 ## API Structure
 /api/platform/
 - /health - Platform status
 - /experiments - List available experiments
 - /settings - Global platform settings
+- /session - Session management
 
-/api/experiments/
-- /:experimentId/config - Get/update experiment config
-- /:experimentId/trials - Trial management
-- /:experimentId/results - Results storage and retrieval
+/api/experiments/nst/
+- /config - NST-specific configuration
+- /trials - Trial management
+- /response - Response handling
+- /results - Results storage
 
-## Component Inheritance
-Platform -> Experiments -> Individual Experiment
-- UI Components cascade down
-- State management flows up
-- Data collection aggregates upward
-- Configuration inherits downward
+## Data Flow
+Platform -> NST -> Framework
+- Configuration flows down from platform
+- Response data flows up through NST
+- Session context maintained at platform level
+- Trial state managed by NST implementation
 
 
-
-graph TB
-    MarkovChain -->|generateNumber| NumberGen[15-Digit Sequence + Metadata]
-    NumberGen -->|buildTrial| TaskSetup[Number Switching Task]
-    
-    subgraph ExperimentCycle
-        TaskSetup -->|initializeTrials| TrialQueue
-        TrialQueue -->|getNextDigit| CurrentDigit
-        CurrentDigit -->|processResponse| ResponseData
-        ResponseData -->|advanceTrial| TrialQueue
-    end
-    
-    ExperimentCycle -->|serveDigit| APIEndpoint
-    APIEndpoint -->|collectResponse| ExperimentCycle

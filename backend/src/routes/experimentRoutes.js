@@ -8,6 +8,9 @@ router.get('/:experimentId/about', experimentController.getExperimentInfo);
 router.get('/:experimentId/config', experimentController.getConfig);
 router.put('/:experimentId/config', experimentController.updateConfig);
 router.get('/:experimentId/validate-config', experimentController.validateConfig);
+router.post('/:experimentId/response', experimentController.handleResponse);
+
+
 
 // Session Control
 router.post('/:experimentId/start', experimentController.startExperiment);

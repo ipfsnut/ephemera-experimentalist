@@ -5,12 +5,13 @@ const nstRoutes = require('./NSTRoutes');
 
 const router = express.Router();
 
-// Core platform routes
-router.use('/platform', platformRoutes);
+// Specific experiment routes first
+router.use('/experiments/nst', nstRoutes);
 
-// Experiment framework routes
+// Framework routes
 router.use('/experiments', experimentRoutes);
 
-// Individual experiment routes
-router.use('/experiments/nst', nstRoutes);
+// Platform routes
+router.use('/platform', platformRoutes);
+
 module.exports = router;

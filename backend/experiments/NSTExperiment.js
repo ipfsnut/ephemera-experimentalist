@@ -11,10 +11,12 @@ class NSTExperiment extends BaseExperiment {
 
   getNextDigit() {
     this.trialCount++;
+    console.log('Getting next digit, trial count:', this.trialCount);
     
     // Generate number sequence using Markov chain
     const result = generateMarkovNumber(this.currentEffortLevel, this.config);
-    
+    console.log('Generated Markov result:', result);
+
     // Adjust effort level based on config rules
     if (this.trialCount % this.config.trialsPerLevel === 0) {
       this.currentEffortLevel = Math.min(7, this.currentEffortLevel + 1);
@@ -36,25 +38,34 @@ class NSTExperiment extends BaseExperiment {
     }
     return trials;
   }  
-  processResponse(response) {
-    const currentNumber = this.state.currentNumber;
-    const isCorrect = (response === 'odd' && currentNumber % 2 === 1) || 
-                     (response === 'even' && currentNumber % 2 === 0);
+processResponse(response) {
+  console.log('Processing response in NSTExperiment:', response);
     
-    this.state.responses.push({
+  const currentDigit = parseInt(response.digit);
+  const isCorrect = (response.response === 'odd' && currentDigit % 2 === 1) ||
+                   (response.response === 'even' && currentDigit % 2 === 0);
+    
+  const result = {
+      digit: currentDigit,
+      response: response.response,
+      responseTime: response.timestamp,
+      isCorrect,
+      trialIndex: this.trialCount
+  };
+    
+  console.log('Calculated response result:', result);
+    
+  this.state.responses.push({
       trial: this.trialCount,
-      number: currentNumber,
-      response,
+      digit: currentDigit,
+      response: response.response,
       isCorrect,
       effortLevel: this.currentEffortLevel,
       timestamp: Date.now()
-    });
-  
-    return {
-      isCorrect,
-      nextTrial: this.trialCount + 1
-    };
-  }
+  });
+    
+  return result;
+}
 }
 
 module.exports = NSTExperiment;

@@ -6,5 +6,8 @@ router.get('/health', platformController.checkHealth);
 router.get('/experiments', platformController.listExperiments);
 router.get('/settings', platformController.getSettings);
 router.put('/settings', platformController.updateSettings);
+router.post('/session', platformController.initializeSession);
+
 
 module.exports = router;
+
