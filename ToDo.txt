@@ -1,171 +1,86 @@
-# Ephemera Full-Stack Integration ToDo
+# Response Handling
+1. Fix response validation in nstController.submitResponse - currently always returns isCorrect: false
+2. Add response timing calculation in useResponseHandler
+3. Ensure consistent trial indexing between frontend and backend
+4. Implement proper response data persistence through platformService
+5. Fix response timestamp handling in useResponseHandler - currently using raw Date.now()
+6. Add proper response validation against Markov chain sequence
+7. Implement response batching for performance
 
-## File Structure (API Stack)
-/src
-  /routes
-    - platformRoutes.js    (Platform management)
-    - experimentRoutes.js  (Experiment framework)
-    - NSTRoutes.js        (NST specific endpoints)
-  /controllers
-    - platformController.js
-    - experimentController.js
-    - nstController.js
-  /services
-    - platformService.js
-    - experimentService.js
-    - nstService.js
+# State Management
+1. Resolve duplicate getProgress methods in nstController
+2. Consolidate trial state management between experimentContext and nstController
+3. Clean up session state tracking in platformService
+4. Implement proper error handling for missing sessions
+5. Fix session initialization in platformService - currently using basic timestamp for ID
+6. Implement proper state transitions as defined in vision.txt state machine
+7. Add state persistence between page reloads
 
-Data Flow Chart
+# Trial Management
+1. Add validation for trial progression in getNextDigit
+2. Implement proper trial completion logic
+3. Add effort level progression tracking
+4. Ensure proper trial data structure in session storage
+5. Fix trial generation to properly use effort levels from config
+6. Add proper trial sequencing with Markov chain
+7. Implement trial timeout handling
 
-graph TD
-    A[experimentRoutes.js] --> |Request| B[experimentController.js]
-    B --> |Core Logic| C[experimentService.js]
-    C --> |Base Implementation| D[baseExperiment.js]
-    
-    E[NSTRoutes.js] --> |Extends| A
-    F[nstController.js] --> |Specialized Logic| B
-    G[nstService.js] --> |Extends| C
-    H[NST Implementation] --> |Extends| D
+# Configuration
+1. Remove redundant config fetching in NST routes
+2. Implement proper config validation
+3. Add configuration persistence
+4. Ensure config updates properly propagate to active sessions
 
-    B --> |Response| A
-    C --> |Data| B
-    D --> |Framework| C
+# Platform Service
+1. Replace hardcoded experiment map with proper registry
+2. Implement proper session tracking with database
+3. Add proper health check implementation
+4. Create proper experiment capability detection
 
+# NST Controller
+1. Fix duplicate state management between methods
+2. Implement proper capture configuration
+3. Add proper trial state transitions
+4. Create proper results aggregation
 
+# Data Collection
+1. Implement analytics pipeline for response data
+2. Add performance metrics collection
+3. Create proper data export functionality
+4. Add session replay capabilities
 
-# Camera Architecture Design
+# Frontend Components
+1. Add loading states to Dashboard
+2. Implement proper error boundaries
+3. Add progress indicators for trial completion
+4. Create proper feedback mechanisms for responses
 
-## Backend Components
-1. Experiment Framework Layer
-   - Capture timing coordination
-   - Storage management through mediaHandler.js
-   - Image metadata tracking
-   - Cleanup routines
-   - Capture decision logic
+# Route Structure
+1. Align experimentRoutes with vision.txt API structure
+2. Implement proper middleware for session validation
+3. Add proper route parameter validation
+4. Create consistent error handling across routes
 
-2. API Endpoints
-   - Capture timing signals
-   - Storage configuration
-   - Metadata retrieval
-   - Storage management
+# ExperimentContext Issues
+1. Remove redundant trial saving logic - currently duplicated with platformService
+2. Implement proper performance metrics collection
+3. Add proper trial completion detection
+4. Fix response recording to include timing data
 
-## Frontend Components
-1. Camera Service
-   - Device access/permissions
-   - Stream handling
-   - Image capture
-   - Data transmission
+# Dashboard Component
+1. Add proper experiment status monitoring
+2. Implement session recovery for interrupted experiments
+3. Add proper loading states during session initialization
+4. Create proper error display for failed operations
 
-2. UI Components
-   - Camera preview
-   - Capture indicators
-   - Permission requests
-   - Error states
+# Markov Chain Integration
+1. Implement proper sequence validation
+2. Add difficulty progression based on performance
+3. Create proper chain state persistence
+4. Add sequence generation metrics
 
-## Data Flow
-1. Backend signals capture needed
-2. Frontend handles device interaction
-3. Image data transmitted to backend
-4. Backend manages storage/metadata
-
-
-
-
-
-
-# Ephemera Full-Stack Integration ToDo
-
-## 1. Controller Implementation ✓
-Backend:
-- platformController.js ✓
-  - checkHealth() ✓
-  - listExperiments() ✓
-  - getSettings() ✓
-  - updateSettings() ✓
-
-Frontend:
-- PlatformStatus.vue - Health/metrics display
-- ExperimentList.vue - Available experiments
-- Settings.vue - Platform configuration
-- MetricsDisplay.vue - Performance visualization
-
-## 2. Service Layer Development ✓
-Backend:
-- platformService.js ✓
-  - System health monitoring ✓
-  - Experiment registration ✓
-  - Global settings management ✓
-
-Frontend:
-- platformService.ts - API integration
-- experimentService.ts - Experiment management
-- dataService.ts - Results handling
-
-## 3. Database Schema Updates
-Backend:
-- Session.js
-- ExperimentConfig.js
-
-Frontend:
-- types/Session.ts
-- types/ExperimentConfig.ts
-- store/sessionModule.ts
-- store/configModule.ts
-
-## 4. Middleware Development
-Backend:
-- requestValidation.js
-- errorHandler.js
-- sessionManager.js
-
-Frontend:
-- axios interceptors
-- auth guards
-- error boundaries
-- session persistence
-
-## 5. Testing Infrastructure
-Backend:
-- Unit Tests
-- Integration Tests
-- Performance Tests
-
-Frontend:
-- Component tests
-- Store tests
-- E2E tests
-- API integration tests
-
-## 6. Documentation
-Backend:
-- API Documentation
-- Implementation Guides
-
-Frontend:
-- Component documentation
-- State management docs
-- Integration examples
-- Setup guides
-
-## 7. Monitoring Setup
-Backend:
-- Request logging ✓
-- Error tracking ✓
-- Performance metrics
-- Session analytics
-
-Frontend:
-- Error reporting
-- Performance monitoring
-- User analytics
-- Debug logging
-
-## 8. Development Process
-1. Platform status vertical slice ✓
-2. Experiment setup flow ✓
-3. NST trial implementation ✓
-4. Data collection and export
-5. Analysis and results
-6. Documentation
-7. Testing
-8. Performance optimization
+# Session Management
+1. Implement proper session recovery mechanisms
+2. Add session state persistence
+3. Create proper session cleanup routines
+4. Add session metadata tracking

@@ -1,47 +1,248 @@
 # Ephemera Platform Vision
 
-# Ephemera Platform Vision
-
-## Core Architecture
+## Platform Architecture
 
 1. Platform Layer (/platform/*)
-- Dashboard and experiment discovery
-- Global state and session management via PlatformContext
-- Authentication and user tracking
-- Common UI components and styling
-- Platform-wide data collection through platformService
+- Core Platform Services
+  → backend/src/services/platformService.js
+    - Session management
+    - User authentication
+    - Data aggregation
+    - Global state tracking
+  
+- Experiment Registry
+  → backend/src/routes/platform.routes.js
+    - Experiment discovery
+    - Capability detection
+    - Resource allocation
+    - Session initialization
 
-2. NST Implementation (/experiments/nst/*)
+2. Experiment Layer
+- Independent Routing
+  → backend/src/routes/experimentRoutes.js
+    - Experiment lifecycle
+    - Trial management
+    - Response handling
+- Isolated State Management
+  → frontend/src/context/ExperimentContext.jsx
+    - Trial state
+    - Configuration
+    - Response processing
+
+3. NST Implementation (/experiments/nst/*)
 - Markov chain sequence generation
+  → backend/utils/markovChain.js (sequence generation)
 - Trial management and validation
+  → backend/src/controllers/nstController.js (trial lifecycle)
+  → frontend/src/experiments/NST/Trial/useResponseHandler.js (response handling)
 - Response processing
+  → backend/src/routes/NSTRoutes.js (NST endpoints)
 - Results visualization
+  → frontend/src/experiments/NST/Results/ResultsView.jsx
 - Direct platform service integration
+  → backend/src/services/nstService.js
 
-3. Experiment Framework (shared resources)
-- Configuration inheritance
-- Common UI components
-- Data collection patterns
-- Export capabilities
+## Experiment Lifecycle
+1. Discovery and Selection
+   → backend/src/routes/experimentRoutes.js (listExperiments)
+2. Metadata Retrieval
+   → backend/src/routes/experimentRoutes.js (getExperimentInfo)
+3. Configuration Management
+   → backend/src/routes/experimentRoutes.js (getConfig, validateConfig, updateConfig)
+4. Session Control
+   → backend/src/routes/experimentRoutes.js (start, pause, resume, abort)
+5. Response Collection
+   → backend/src/routes/experimentRoutes.js (handleResponse)
 
+## Experiment Controller Integration
+
+1. Route-Controller Mapping
+- Experiment Discovery
+  → listExperiments: Global experiment registry access
+  → getExperimentInfo: Metadata and capability detection
+- Configuration Management
+  → getConfig: Current experiment configuration
+  → updateConfig: Configuration mutation with validation
+  → validateConfig: Pre-flight configuration checks
+- Session Management
+  → startExperiment: Initialize session and trial state
+  → pauseExperiment: Preserve trial state and suspend
+  → resumeExperiment: Restore state and continue
+  → abortExperiment: Clean termination with data preservation
+- Response Handling
+  → handleResponse: Process and store trial responses
+  → submitResponse: Transform and validate response data
+  → updateTrialState: Manage trial progression
+
+2. Controller-Service Flow
+- Configuration Pipeline
+  → Route → Controller → Validation → Service → State Update
+- Session Pipeline
+  → Route → Controller → State Machine → Service → Trial State
+- Response Pipeline
+  → Route → Controller → Processing → Storage → Analytics
 ## API Structure
 /api/platform/
 - /health - Platform status
+  → backend/src/routes/platform.routes.js
 - /experiments - List available experiments
+  → backend/src/routes/platform.routes.js
 - /settings - Global platform settings
+  → backend/config.js
 - /session - Session management
+  → backend/src/routes/platform.routes.js
+
+  /api/experiments/
+- /list - Experiment discovery
+- /:experimentId/about - Experiment metadata
+- /:experimentId/config - Get/update configuration
+- /:experimentId/validate-config - Configuration validation
+- /:experimentId/response - Response handling
+- /:experimentId/start - Initialize experiment
+- /:experimentId/pause - Pause active session
+- /:experimentId/resume - Resume paused session
+- /:experimentId/abort - Terminate session
 
 /api/experiments/nst/
 - /config - NST-specific configuration
+  → backend/src/routes/NSTRoutes.js
 - /trials - Trial management
+  → backend/src/routes/NSTRoutes.js
+- /next-digit - Sequence progression
+  → backend/src/routes/NSTRoutes.js
+- /capture - Response capture
+  → backend/src/routes/NSTRoutes.js
+- /capture-config - Capture settings
+  → backend/src/routes/NSTRoutes.js
+- /state - Experiment state
+  → backend/src/routes/NSTRoutes.js
+- /trial-state - Current trial info
+  → backend/src/routes/NSTRoutes.js
 - /response - Response handling
+  → backend/src/routes/NSTRoutes.js
 - /results - Results storage
+  → backend/src/routes/NSTRoutes.js
+
 
 ## Data Flow
 Platform -> NST -> Framework
 - Configuration flows down from platform
+  → PlatformContext -> ExperimentContext -> NST Components
 - Response data flows up through NST
+  → useResponseHandler -> nstController -> platformService
 - Session context maintained at platform level
+  → platformService manages all session state
 - Trial state managed by NST implementation
+  → nstController handles trial lifecycle
+  Experiment Control Flow:
+- Configuration: Platform → Validation → Experiment Controller → Trial
+- Session: Platform → Session Control → Experiment Controller → Trial State
+- Response: Trial → Response Handler → Experiment Controller → Platform
 
 
+## Session State Machine
+
+1. State Transitions
+- Initialization
+  → POST /:experimentId/start
+  → State: INITIALIZED → RUNNING
+- Suspension
+  → POST /:experimentId/pause
+  → State: RUNNING → PAUSED
+- Continuation
+  → POST /:experimentId/resume
+  → State: PAUSED → RUNNING
+- Termination
+  → POST /:experimentId/abort
+  → State: ANY → TERMINATED
+
+2. State Effects
+- RUNNING
+  → Active trial progression
+  → Response collection enabled
+  → Configuration locked
+- PAUSED
+  → Trial state preserved
+  → Response collection suspended
+  → Configuration accessible
+- TERMINATED
+  → Session data finalized
+  → Results available
+  → Configuration unlocked
+
+## Response Pipeline
+
+## Response Pipeline
+
+1. Data Flow
+- Trial Response
+  → Frontend: useResponseHandler hooks
+    → Response validation
+    → State updates
+    → Trial progression
+  → Backend: nstController.submitResponse
+    → Data transformation
+    → Response validation
+    → State updates
+  → platformService
+    → Session tracking
+    → Data persistence
+
+2. Response Processing
+- Frontend Processing
+  → Trial state updates
+  → UI feedback
+  → Next trial preparation
+- Backend Processing
+  → Raw data transformation
+  → Trial state updates
+  → Session progress tracking
+- Data Aggregation
+  → Trial-level metrics
+  → Session-level analytics
+  → Platform-wide statistics
+
+
+## API Documentation
+
+1. Experiment Management
+- GET /list
+  → Returns: Available experiments catalog
+  → Usage: Platform discovery phase
+- GET /:experimentId/about
+  → Returns: Experiment metadata, capabilities
+  → Usage: Experiment selection phase
+- GET /:experimentId/config
+  → Returns: Current configuration state
+  → Usage: Setup phase
+- PUT /:experimentId/config
+  → Accepts: Configuration updates
+  → Returns: Updated configuration
+  → Usage: Configuration phase
+- GET /:experimentId/validate-config
+  → Returns: Validation status and errors
+  → Usage: Pre-flight checks
+
+2. Data Flow Patterns
+
+Platform Integration
+- Configuration Chain:
+  → Dashboard → ExperimentContext → Controller → Service
+- Response Chain:
+  → Trial → ResponseHandler → Controller → Service → Storage
+- Session Chain:
+  → Platform → Controller → State Machine → Trial Management
+
+State Management
+- Platform Level:
+  → Global session context
+  → User authentication state
+  → Experiment registry
+- Experiment Level:
+  → Configuration state
+  → Trial progression
+  → Response aggregation
+- Trial Level:
+  → Current trial state
+  → Response validation
+  → Data collection
