@@ -1,19 +1,12 @@
 # Response Handling
-1. Fix response validation in nstController.submitResponse - currently always returns isCorrect: false
 2. Add response timing calculation in useResponseHandler
-3. Ensure consistent trial indexing between frontend and backend
-4. Implement proper response data persistence through platformService
 5. Fix response timestamp handling in useResponseHandler - currently using raw Date.now()
-6. Add proper response validation against Markov chain sequence
 7. Implement response batching for performance
 
 # State Management
-1. Resolve duplicate getProgress methods in nstController
-2. Consolidate trial state management between experimentContext and nstController
 3. Clean up session state tracking in platformService
 4. Implement proper error handling for missing sessions
 5. Fix session initialization in platformService - currently using basic timestamp for ID
-6. Implement proper state transitions as defined in vision.txt state machine
 7. Add state persistence between page reloads
 
 # Trial Management

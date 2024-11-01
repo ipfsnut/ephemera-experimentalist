@@ -1,10 +1,9 @@
-const BaseExperiment = require('../../core/baseExperiment');
 const logger = require('../utils/logger');
-
 
 class ExperimentService {
   constructor() {
     this.experiments = new Map();
+    this.activeSessions = new Map();
   }
 
   async getAvailableExperiments() {
@@ -40,79 +39,59 @@ class ExperimentService {
     return experiment.config;
   }
 
-  async validateConfig(experimentId, config) {
-    const experiment = this.experiments.get(experimentId);
-    if (!experiment) throw new Error('Experiment not found');
-    return experiment.validateConfig(config);
+  async startExperiment(experimentId, sessionId, config) {
+    logger.info('Starting experiment:', { experimentId, sessionId });
+    const session = {
+      id: sessionId,
+      experimentId,
+      state: 'RUNNING',
+      startTime: Date.now(),
+      config,
+      trials: [],
+      currentTrialIndex: 0,
+      responses: []
+    };
+    this.activeSessions.set(sessionId, session);
+    return session;
   }
 
-  async startExperiment(experimentId, config) {
-    console.log('Starting experiment:', experimentId);
-    const experiment = this.experiments.get(experimentId);
-    if (!experiment) throw new Error('Experiment not found');
-    return experiment.start(config);
+  async getSessionState(sessionId) {
+    const session = this.activeSessions.get(sessionId);
+    if (!session) throw new Error('Session not found');
+    return session.state;
   }
 
-  async pauseExperiment(experimentId) {
-    const experiment = this.experiments.get(experimentId);
-    if (!experiment) throw new Error('Experiment not found');
-    return experiment.pause();
+  async updateSessionState(sessionId, newState) {
+    const session = this.activeSessions.get(sessionId);
+    if (!session) throw new Error('Session not found');
+    session.state = newState;
+    return session.state;
   }
 
-  async resumeExperiment(experimentId) {
-    const experiment = this.experiments.get(experimentId);
-    if (!experiment) throw new Error('Experiment not found');
-    return experiment.resume();
+  async recordResponse(sessionId, responseData) {
+    const session = this.activeSessions.get(sessionId);
+    if (!session) throw new Error('Session not found');
+    session.responses.push(responseData);
+    logger.info('Response recorded:', { sessionId, response: responseData });
+    return responseData;
   }
 
-  async abortExperiment(experimentId) {
-    const experiment = this.experiments.get(experimentId);
-    if (!experiment) throw new Error('Experiment not found');
-    return experiment.abort();
+  async getCurrentTrial(sessionId) {
+    const session = this.activeSessions.get(sessionId);
+    if (!session) throw new Error('Session not found');
+    return session.trials[session.currentTrialIndex];
+  }
+
+  async updateTrialIndex(sessionId, newIndex) {
+    const session = this.activeSessions.get(sessionId);
+    if (!session) throw new Error('Session not found');
+    session.currentTrialIndex = newIndex;
+    return session.currentTrialIndex;
   }
 
   registerExperiment(experiment) {
-    if (!(experiment instanceof BaseExperiment)) {
-      throw new Error('Invalid experiment instance');
-    }
     this.experiments.set(experiment.id, experiment);
-  }
-
-  async getExperimentInstance(experimentId, sessionId) {
-    const experiment = this.experiments.get(experimentId);
-    if (!experiment) {
-      throw new Error('Experiment not found');
-    }
-    
-    // Track active sessions and their experiment instances
-    if (!this.activeSessions) {
-      this.activeSessions = new Map();
-    }
-    
-    let instance = this.activeSessions.get(sessionId);
-    if (!instance) {
-      instance = new NSTExperiment(experiment.config);
-      this.activeSessions.set(sessionId, instance);
-    }
-    
-    return instance;
-  }  
-
-  async processResponse(experimentId, sessionId, responseData) {
-    const experiment = await this.getExperimentInstance(experimentId, sessionId);
-    const result = experiment.processResponse(responseData.response);
-    
-    logger.info('Response processed:', {
-      experimentId,
-      sessionId,
-      response: responseData,
-      result
-    });
-    
-    return result;
   }
 }
 
 module.exports = new ExperimentService();
-
-

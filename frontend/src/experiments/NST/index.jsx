@@ -17,27 +17,27 @@ const NST = () => {
 
   useEffect(() => {
     initializeExperiment()
-  }, [])
+  }, [dispatch]) // Add dispatch as dependency
 
-  const initializeExperiment = async () => {
-    const config = await fetch('/api/experiments/nst/config').then(r => r.json())
-    const response = await fetch('/api/experiments/nst/trials', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' }
+const initializeExperiment = async () => {
+    if (experimentState.sessionId) return; // Skip if already initialized
+    
+    const config = await fetch('http://localhost:5069/api/experiments/nst/config').then(r => r.json())
+    const response = await fetch('http://localhost:5069/api/experiments/nst/trials', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
     }).then(r => r.json())
 
     setExperimentState({
-      currentDigit: response.currentDigit,
-      currentTrial: 0,
-      currentDigitIndex: 0,
-      totalTrials: config.numTrials,
-      trials: response.trials,
-      sessionId: response.sessionId
+        currentDigit: response.currentDigit,
+        currentTrial: 0,
+        currentDigitIndex: 0,
+        totalTrials: config.numTrials,
+        trials: response.trials,
+        sessionId: response.sessionId
     })
-    
     dispatch({ type: 'SET_SESSION', payload: response.sessionId })
-  }
-
+}
   const handleDigitComplete = async () => {
     const nextDigitResponse = await fetch(`/api/experiments/nst/next-digit?trialIndex=${experimentState.currentTrial}&digitIndex=${experimentState.currentDigitIndex + 1}`).then(r => r.json())
     
