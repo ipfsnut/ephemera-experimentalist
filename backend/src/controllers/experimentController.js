@@ -150,28 +150,37 @@ class ExperimentController {
 
   async exportSessionData(req, res, next) {
     try {
-      const { experimentId, sessionId } = req.params;
-      const mediaHandler = new MediaHandler();
-      
-      res.attachment(`${experimentId}-session-${sessionId}.zip`);
+      const { sessionId } = req.params;
       const archive = archiver('zip', { zlib: { level: 9 } });
+      res.attachment(`session-${sessionId}-export.zip`);
       archive.pipe(res);
-
-      const captures = await mediaHandler.getSessionCaptures(sessionId);
-      captures.forEach(capture => {
-        archive.file(capture.path, { name: `images/${capture.filename}` });
+  
+      // Get aggregated results through coordinator
+      const results = await this.coordinator.aggregateResults(sessionId);
+  
+      // Add captures
+      results.captures.forEach(capture => {
+        archive.file(capture.path, { name: `captures/${capture.filename}` });
       });
-
-      const responses = await experimentService.getSessionResponses(sessionId);
-      const csvData = this.convertToCSV(responses);
-      archive.append(csvData, { name: 'responses.csv' });
-
-      archive.finalize();
+  
+      // Add trial data
+      const csvData = this.convertToCSV(results.responses);
+      archive.append(csvData, { name: 'data/trials.csv' });
+  
+      // Add enriched metadata
+      archive.append(JSON.stringify({
+        ...results.metrics,
+        timing: results.timing,
+        experimentId: results.experimentId
+      }, null, 2), { name: 'metadata.json' });
+  
+      await archive.finalize();
     } catch (error) {
       logger.error('Failed to export session data:', error);
       next(error);
     }
   }
+  
 
   convertToCSV(responses) {
     const headers = ['trialNumber', 'digit', 'response', 'isCorrect', 'timestamp'];

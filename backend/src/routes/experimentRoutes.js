@@ -10,7 +10,7 @@ router.put('/:experimentId/config', experimentController.updateConfig);
 router.get('/:experimentId/validate-config', experimentController.validateConfig);
 
 // Data Export
-router.get('/:experimentId/export/:sessionId', experimentController.exportSessionData);
+router.get('/:experimentId/sessions/:sessionId/export', experimentController.exportSessionData);
 
 // Session Control
 router.post('/:experimentId/pause', experimentController.pauseExperiment);
