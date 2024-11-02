@@ -1,17 +1,40 @@
 const express = require('express');
-const platformRoutes = require('./platformRoutes');
-const experimentRoutes = require('./experimentRoutes');
-const nstRoutes = require('./NSTRoutes');
 
-const router = express.Router();
+module.exports = (coordinator) => {
+  const router = express.Router();
 
-// Specific experiment routes first
-router.use('/experiments/nst', nstRoutes);
+  router.post('/experiments/:experimentId/start', async (req, res, next) => {
+    try {
+      const result = await coordinator.initializeExperiment(
+        req.params.experimentId,
+        req.body.config
+      );
+      res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  });
 
-// Framework routes
-router.use('/experiments', experimentRoutes);
+  router.post('/experiments/:experimentId/response', async (req, res, next) => {
+    try {
+      const result = await coordinator.handleTrialResponse(
+        req.params.sessionId,
+        req.body
+      );
+      res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  });
 
-// Platform routes
-router.use('/platform', platformRoutes);
+  router.get('/experiments/:experimentId/results', async (req, res, next) => {
+    try {
+      const results = await coordinator.aggregateResults(req.params.sessionId);
+      res.json(results);
+    } catch (error) {
+      next(error);
+    }
+  });
 
-module.exports = router;
+  return router;
+};

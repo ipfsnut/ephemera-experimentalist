@@ -1,7 +1,8 @@
 const platformService = require('../services/experimentService');
 const experimentConfig = require('../../config');
 const { generateMarkovNumber } = require('../../utils/markovChain');
-
+const archiver = require('archiver');
+const { MediaHandler } = require('../../services/mediaHandler');
 
 
 const createTrial = async (req, res) => {
@@ -11,13 +12,12 @@ const createTrial = async (req, res) => {
       effortLevel: experimentConfig.EFFORT_LEVELS[1]
     });
 
-    // Use the proper Markov chain generator
     const { number } = generateMarkovNumber(1, experimentConfig);
     const initialTrial = {
-      currentDigit: number[0], // Take first digit from generated sequence
+      currentDigit: number[0],
       trials: generateTrialSequence(experimentConfig.numTrials),
       sessionId: session.id,
-      sequence: number // Store full sequence for progression
+      sequence: number
     };
 
     res.json(initialTrial);
@@ -26,50 +26,98 @@ const createTrial = async (req, res) => {
   }
 };
 
-// Helper function to generate trial sequence using Markov chains
 const generateTrialSequence = (numTrials) => {
-    return Array(numTrials).fill().map(() => ({
-      number: generateMarkovNumber(1, experimentConfig).number,
-      currentIndex: 0
-    }));
+  return Array(numTrials).fill().map(() => ({
+    number: generateMarkovNumber(1, experimentConfig).number,
+    currentIndex: 0
+  }));
 };
+
 const getNextDigit = async (req, res) => {
-  const { trialIndex, digitIndex } = req.query;
   try {
-      const digit = await platformService.getNextDigit(trialIndex, digitIndex);
-      res.json(digit);
+    const result = generateMarkovNumber(1, experimentConfig);
+    console.log('Generated next digit:', result);
+    res.json({
+      digit: result.number[0],
+      metadata: {
+        effortLevel: result.effortLevel,
+        sequence: result.number,
+        ...result.metadata
+      }
+    });
   } catch (error) {
-      res.status(500).json({ error: error.message });
+    console.error('Error generating next digit:', error);
+    res.status(500).json({ error: error.message });
   }
 };
 
 const submitResponse = async (req, res) => {
-  const { experimentId, digit, response, timestamp } = req.body;
+  const { 
+    experimentId, 
+    sessionId, 
+    trialNumber, 
+    digit, 
+    response, 
+    timestamp, 
+    metadata 
+  } = req.body;
+
   try {
-      const result = await platformService.recordResponse(experimentId, { digit, response, timestamp });
-      res.json(result);
+    // Record behavioral response
+    const result = await platformService.recordResponse(experimentId, {
+      sessionId,
+      trialNumber,
+      digit,
+      response,
+      timestamp,
+      metadata
+    });
+
+    // Handle capture if present
+    if (req.files?.capture) {
+      const captureResult = await mediaHandler.saveCapture(
+        sessionId,
+        trialNumber,
+        metadata.digitIndex,
+        req.files.capture
+      );
+      result.captureData = captureResult;
+    }
+
+    res.json(result);
   } catch (error) {
-      res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
-
 const getProgress = async (req, res) => {
   const { experimentId } = req.params;
   try {
-      const progress = await platformService.getProgress(experimentId);
-      res.json(progress);
+    const progress = await platformService.getProgress(experimentId);
+    res.json(progress);
   } catch (error) {
-      res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
 const submitCapture = async (req, res) => {
-  const { experimentId, captureData } = req.body;
+  const { imageData, captureData } = req.body;
   try {
-      const result = await platformService.recordCapture(experimentId, captureData);
-      res.json(result);
+    const mediaHandler = new MediaHandler();
+    const result = await mediaHandler.saveCapture(
+      req.params.sessionId || Date.now().toString(),
+      captureData.trialNumber || 1,
+      captureData.digitNumber || 1,
+      imageData
+    );
+
+    res.json({
+      success: true,
+      filepath: result.filepath,
+      metadata: result.metadata
+    });
   } catch (error) {
-      res.status(500).json({ error: error.message });
+    console.error('Capture error:', error);
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -80,20 +128,20 @@ const getCaptureConfig = async (req, res) => {
 const getExperimentState = async (req, res) => {
   const { experimentId } = req.params;
   try {
-      const state = await platformService.getSessionState(experimentId);
-      res.json({ state });
+    const state = await platformService.getSessionState(experimentId);
+    res.json({ state });
   } catch (error) {
-      res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
 const getTrialState = async (req, res) => {
   const { experimentId } = req.params;
   try {
-      const trial = await platformService.getCurrentTrial(experimentId);
-      res.json(trial);
+    const trial = await platformService.getCurrentTrial(experimentId);
+    res.json(trial);
   } catch (error) {
-      res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -104,10 +152,43 @@ const getNSTConfig = async (req, res) => {
 const updateNSTConfig = async (req, res) => {
   const newConfig = req.body;
   try {
-      const updatedConfig = await platformService.updateConfig('nst', newConfig);
-      res.json(updatedConfig);
+    const updatedConfig = await platformService.updateConfig('nst', newConfig);
+    res.json(updatedConfig);
   } catch (error) {
-      res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const convertToCSV = (responses) => {
+  const headers = ['trialNumber', 'digit', 'response', 'isCorrect', 'timestamp'];
+  const rows = responses.map(r => 
+    `${r.trialNumber},${r.digit},${r.response},${r.isCorrect},${r.timestamp}`
+  );
+  return [headers.join(','), ...rows].join('\n');
+};
+
+const exportSessionData = async (req, res) => {
+  const { sessionId } = req.params;
+  const mediaHandler = new MediaHandler();
+  
+  res.attachment(`nst-session-${sessionId}.zip`);
+  const archive = archiver('zip', { zlib: { level: 9 } });
+  archive.pipe(res);
+
+  try {
+    const captures = await mediaHandler.getSessionCaptures(sessionId);
+    captures.forEach(capture => {
+      archive.file(capture.path, { name: `images/${capture.filename}` });
+    });
+
+    const responses = await platformService.getSessionState(sessionId);
+    const csvData = convertToCSV(responses);
+    archive.append(csvData, { name: 'responses.csv' });
+
+    archive.finalize();
+  } catch (error) {
+    console.error('Export error:', error);
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -121,5 +202,6 @@ module.exports = {
   getExperimentState,
   getTrialState,
   getNSTConfig,
-  updateNSTConfig
+  updateNSTConfig,
+  exportSessionData
 };

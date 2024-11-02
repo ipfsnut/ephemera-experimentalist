@@ -1,24 +1,87 @@
 const logger = require('../utils/logger');
 
 class PlatformService {
-  constructor() {
+  constructor(sessionStore, mongoStore) {
+    this.sessionStore = sessionStore;
+    this.mongoStore = mongoStore;
     this.experiments = new Map([
       ['nst', {
         id: 'nst',
         name: 'Number Switching Task',
-        description: 'A cognitive task measuring effort and task-switching ability',
+        description: 'A cognitive task measuring cognitive effort without difficulty',
         status: 'active'
       }]
     ]);
-    this.settings = {
-      allowNewExperiments: true,
-      maxConcurrentSessions: 10,
-      dataRetentionDays: 30
+  }
+
+  async updateSessionState(sessionId, updates) {
+    const session = await this.getSessionState(sessionId);
+    const updatedState = {
+      ...session,
+      ...updates,
+      lastUpdated: Date.now()
+    };
+
+    await this.mongoStore.sessions.updateOne(
+      { sessionId },
+      { $set: updatedState },
+      { upsert: true }
+    );
+
+    return updatedState;
+  }
+
+  async getSessionState(sessionId) {
+    const session = await this.mongoStore.sessions.findOne({ sessionId });
+    if (!session) {
+      throw new AppError('Session not found', 404);
+    }
+    return session;
+  }
+
+  async initializeSession(experimentId, config) {
+    const sessionId = crypto.randomUUID();
+    const sessionState = {
+      sessionId,
+      experimentId,
+      config,
+      status: 'initialized',
+      responses: [],
+      captures: [],
+      trialState: {
+        current: 0,
+        total: config.trials
+      },
+      metadata: {
+        startTime: Date.now(),
+        lastUpdated: Date.now()
+      }
+    };
+
+    await this.mongoStore.sessions.insertOne(sessionState);
+    return sessionState;
+  }
+
+  async aggregateSessionData(sessionId) {
+    const session = await this.getSessionState(sessionId);
+    return {
+      experimentId: session.experimentId,
+      responses: session.responses,
+      captures: session.captures,
+      trialProgress: {
+        completed: session.responses.length,
+        total: session.trialState.total
+      },
+      timing: {
+        start: session.metadata.startTime,
+        lastUpdate: session.metadata.lastUpdated
+      }
     };
   }
 
+  // Core Platform Services
   async checkHealth() {
-    const health = {
+    return {
       health: 'healthy',
       timestamp: Date.now(),
       services: {
@@ -27,51 +90,12 @@ class PlatformService {
         experimentRunner: true
       }
     };
-    return health;
   }
 
+  // Experiment Registry
   async listExperiments() {
-    const experimentList = Array.from(this.experiments.values()).map(exp => ({
-      id: exp.id,
-      name: exp.name,
-      description: exp.description,
-      status: exp.status
-    }));
-    return experimentList;
-  }
-
-  async getSettings() {
-    return this.settings;
-  }
-
-  async updateSettings(newSettings) {
-    this.settings = {
-      ...this.settings,
-      ...newSettings
-    };
-    logger.info('Platform settings updated', this.settings);
-    return this.settings;
-  }
-
-  async getTotalSessions() {
-    // Placeholder for database integration
-    return this.experiments.reduce((total, exp) => total + exp.sessions.length, 0);
-  }
-  
-  async createSession(experimentId) {
-    const experiment = this.experiments.get(experimentId);
-    if (!experiment) {
-      throw new Error('Experiment not found');
-    }
-    return {
-      id: Date.now().toString(),
-      experimentId,
-      status: 'initialized',
-      startTime: Date.now()
-    };
+    return Array.from(this.experiments.values());
   }
 }
 
-module.exports = new PlatformService();
-
-
+module.exports = PlatformService;

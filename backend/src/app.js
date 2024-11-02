@@ -3,28 +3,45 @@ const cors = require('cors');
 const morgan = require('morgan');
 const helmet = require('helmet');
 const session = require('express-session');
-const routes = require('./routes');  // Change: Import consolidated routes
+const MongoStore = require('connect-mongo');
+
+const ServiceCoordinator = require('./services/ServiceCoordinator');
+const NSTService = require('./services/nstService');
+const PlatformService = require('./services/platformService');
+const MediaHandler = require('./services/mediaHandler');
+const routes = require('./routes');
+
+// Initialize services
+const mongoStore = MongoStore.create({
+  mongoUrl: process.env.MONGO_URI,
+  collectionName: 'sessions'
+});
+
+const coordinator = new ServiceCoordinator(
+  new NSTService(),
+  new PlatformService(mongoStore),
+  new MediaHandler()
+);
 
 const app = express();
 
-// Add CORS middleware
+// Middleware
 app.use(cors({
   origin: 'http://localhost:5173',
   credentials: true
 }));
 
-// Helmet configuration
 app.use(helmet({
   contentSecurityPolicy: false,
   crossOriginEmbedderPolicy: false,
 }));
 
-// Session configuration
 app.use(session({
+  store: mongoStore,
   secret: 'nst-experiment-secret',
   resave: true,
   saveUninitialized: true,
-  cookie: { 
+  cookie: {
     secure: false,
     sameSite: 'lax'
   }
@@ -33,14 +50,8 @@ app.use(session({
 app.use(morgan('dev'));
 app.use(express.json());
 
-// Test route
-app.get('/test', (req, res) => {
-  res.json({ message: 'API is working' });
-});
-
-// Routes
-// Change: Use consolidated routing through index.js
-app.use('/api', routes);
+// Inject coordinator into routes
+app.use('/api', routes(coordinator));
 
 // Error handling middleware
 app.use((err, req, res, next) => {

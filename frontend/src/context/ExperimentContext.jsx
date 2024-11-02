@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useReducer } from 'react'
-import { experimentService } from '../services/experimentService'
 
 const ExperimentContext = createContext()
 
@@ -9,40 +8,38 @@ const experimentReducer = (state, action) => {
       return { ...state, sessionId: action.payload }
       
     case 'START_TRIAL':
-      console.log('START_TRIAL reducer called with payload:', action.payload)
-      const newState = {
+      return {
         ...state,
-        currentDigit: action.payload.currentDigit,
-        sequence: action.payload.sequence,
+        currentDigit: action.payload.digit,
+        sequence: action.payload.metadata.sequence || [],
         sessionId: action.payload.sessionId,
-        trials: action.payload.trials,
-        currentTrial: state.responses.length > 0 ? state.currentTrial + 1 : 0,
-        responses: [] // Reset responses for new trial
+        trials: Array(10).fill().map(() => ({ 
+          number: action.payload.metadata.sequence 
+        })),
+        currentTrial: state.responses.length > 0 ? state.currentTrial + 1 : 1,
+        responses: [],
+        currentDigitIndex: 0
       }
-      console.log('New state after START_TRIAL:', newState)
-      return newState
-
     case 'RECORD_RESPONSE':
-      const nextIndex = state.responses.length + 1
-      const nextDigit = state.sequence[nextIndex]
+      const nextIndex = (state.currentDigitIndex || 0) + 1
+      const nextDigit = state.sequence?.[nextIndex]
       
-      // If we've reached the end of the sequence
       if (!nextDigit) {
         return {
           ...state,
           responses: [...state.responses, action.payload],
-          savedTrials: [...state.savedTrials, {
+          savedTrials: [...(state.savedTrials || []), {
             sequence: state.sequence,
             responses: [...state.responses, action.payload]
           }]
         }
       }
 
-      // Otherwise continue with current trial
       return {
         ...state,
         responses: [...state.responses, action.payload],
-        currentDigit: nextDigit
+        currentDigit: nextDigit,
+        currentDigitIndex: nextIndex
       }
 
     case 'SET_TRIAL_DATA':
@@ -92,6 +89,8 @@ export const ExperimentProvider = ({ children }) => {
     trials: [],
     currentTrial: 0,
     currentDigit: null,
+    currentDigitIndex: 0,
+    sequence: [],
     responses: [],
     performanceMetrics: [],
     trialData: null,
@@ -101,27 +100,25 @@ export const ExperimentProvider = ({ children }) => {
     error: null
   })
 
-  const saveTrialData = async (trialData) => {
-    dispatch({ type: 'SAVE_TRIAL_START' })
-    try {
-      const response = await fetch(`/api/data/trials/${state.sessionId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(trialData)
-      })
-      const savedTrial = await response.json()
-      dispatch({ type: 'SAVE_TRIAL_SUCCESS', payload: savedTrial })
-      return savedTrial
-    } catch (error) {
-      dispatch({ type: 'SAVE_TRIAL_ERROR', payload: error.message })
-      throw error
-    }
-  }
-
   const value = {
     state,
     dispatch,
-    saveTrialData
+    saveTrialData: async (trialData) => {
+      dispatch({ type: 'SAVE_TRIAL_START' })
+      try {
+        const response = await fetch(`/api/data/trials/${state.sessionId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(trialData)
+        })
+        const savedTrial = await response.json()
+        dispatch({ type: 'SAVE_TRIAL_SUCCESS', payload: savedTrial })
+        return savedTrial
+      } catch (error) {
+        dispatch({ type: 'SAVE_TRIAL_ERROR', payload: error.message })
+        throw error
+      }
+    }
   }
 
   return (
@@ -138,3 +135,5 @@ export const useExperiment = () => {
   }
   return context
 }
+
+export default ExperimentContext

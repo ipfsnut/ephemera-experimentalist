@@ -1,39 +1,45 @@
-import { useCallback, useRef, useEffect } from 'react';
-import { useExperiment } from '../../../context/ExperimentContext';
-
 const useResponseHandler = (currentDigit) => {
   const { state, dispatch } = useExperiment();
-  const prevDigitRef = useRef(currentDigit);
 
-  const handleResponse = useCallback(async (response) => {
+  const handleResponse = useCallback(async (response, captureData) => {
     const responseData = {
+      experimentId: 'nst',
+      sessionId: state.sessionId,
+      trialNumber: state.currentTrial + 1,
       digit: currentDigit,
-      response,
-      timestamp: Date.now()
+      response: response === 'f' ? 'odd' : 'even',
+      timestamp: Date.now(),
+      captureData,
+      metadata: {
+        digitIndex: state.currentDigitIndex,
+        sequence: state.sequence,
+        isCorrect: (response === 'f' && currentDigit % 2 === 1) ||
+                  (response === 'j' && currentDigit % 2 === 0)
+      }
     };
 
     try {
-      const result = await fetch(`/api/experiments/nst/response`, {
+      const result = await fetch('/api/experiments/nst/response', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          experimentId: 'nst',
-          sessionId: state.sessionId,
-          ...responseData
-        })
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${state.sessionId}`
+        },
+        credentials: 'include',
+        body: JSON.stringify(responseData)
       });
-      
-      const validatedResponse = await result.json();
-      dispatch({ type: 'RECORD_RESPONSE', payload: validatedResponse });
-      
-      return validatedResponse;
+      const data = await result.json();
+      if (result.ok) {
+        dispatch({ type: 'RECORD_RESPONSE', payload: responseData });
+        return data;
+      }
+      throw new Error(data.message || 'Response submission failed');
     } catch (error) {
-      console.error('Response processing failed:', error);
-      throw error;
+      console.error('Error submitting response:', error);
+      dispatch({ type: 'RECORD_RESPONSE', payload: responseData });
+      return responseData;
     }
-  }, [currentDigit, state.sessionId, dispatch]);
+  }, [currentDigit, state.sessionId, state.currentTrial, state.currentDigitIndex, state.sequence]);
 
   return { handleResponse };
 };
-
-export default useResponseHandler;

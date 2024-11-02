@@ -1,3 +1,5 @@
+import { api } from '../api';
+
 export const experimentService = {
   async getStatus() {
     const response = await fetch('/api/platform/status');
@@ -17,4 +19,23 @@ export const experimentService = {
     });
     return response.json();
   }
+};
+
+export const getCaptureConfig = async (experimentId) => {
+  const response = await api.get(`/api/experiment/${experimentId}/capture-config`);
+  return response.data;
+};
+
+export const validateCaptureSettings = (config) => {
+  const {
+    captureInterval,
+    qualitySettings,
+    storageOptions
+  } = config;
+  
+  return {
+    interval: captureInterval || 1000,
+    quality: qualitySettings || { format: 'jpeg', compression: 0.8 },
+    storage: storageOptions || { type: 'session' }
+  };
 };

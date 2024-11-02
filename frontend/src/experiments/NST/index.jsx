@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useExperiment } from '../../context/ExperimentContext'
-import TrialDisplay from './Trial/TrialDisplay'
+import NSTDisplay from './NSTDisplay'
 import useTrialCompletion from './Trial/useTrialCompletion'
 
 const NST = () => {
@@ -59,7 +59,7 @@ const initializeExperiment = async () => {
   }
 
   return experimentState.currentDigit ? (
-    <TrialDisplay
+    <NSTDisplay
       currentDigit={experimentState.currentDigit}
       currentTrial={experimentState.currentTrial}
       totalTrials={experimentState.totalTrials}
